@@ -6,7 +6,7 @@ rolling_mod=function(split) {
   analysis_set= analysis(split) #get dataframe
   
   fit_model= tsglm(analysis_set[,"abundance"], model = past, distr = "nbinom", 
-                   xreg  = analysis_set[,9:10], 
+                   xreg  = analysis_set[,8:10], 
                    link  = "log")
 }
 
@@ -18,7 +18,7 @@ rolling_mod_coef= function (split) {
   analysis_set= analysis(split) #get dataframe
   
   fit_model= tsglm(analysis_set[,"abundance"], model = past, distr = "nbinom", 
-                   xreg  = analysis_set[,9:10], 
+                   xreg  = analysis_set[,8:10], 
                    link  = "log")
   
   #get model coefficients    
@@ -34,7 +34,7 @@ get_preds=function(split, model) {
   analysis_set= analysis(split) #get dataframe
   assessment_set=assessment(split)
   
-  preds=predict(model, n.ahead=12, newxreg= assessment_set[,9:10])$pred
+  preds=predict(model, n.ahead=12, newxreg= assessment_set[,8:10])$pred
 }
 
 #create function for evaluating model
