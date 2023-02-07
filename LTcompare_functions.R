@@ -80,7 +80,7 @@ get_dat=function(split, model) {
   holdout= assessment_set[,"abundance"]
   period= assessment_set[,"period"]
   year=assessment_set[,"year"]
-  mod_preds=as.integer(predict(model, n.ahead=12, newxreg=assessment_set[,9:10])$pred)
+  mod_preds=as.integer(predict(model, n.ahead=12, newxreg=assessment_set[,8:10])$pred)
   hp=cbind(year,period, holdout, mod_preds)
 }
 

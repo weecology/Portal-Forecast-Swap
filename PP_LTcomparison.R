@@ -18,7 +18,7 @@ require(tidyverse)
 
 #load Portal data####
 portal_dat1=summarise_rodent_data(
-  path = get_default_data_path(),
+  path = "repo",
   clean = TRUE,
   level = "Treatment",
   type = "Rodents",
@@ -33,19 +33,19 @@ portal_dat1=summarise_rodent_data(
   relocate(c("year", "month", "day"), .before="treatment")
 
 #get covariates
-temp=weather(level="daily", fill=TRUE, horizon=90)
+covars=weather(level="newmoon", fill=TRUE, horizon=365)%>%
+  select(newmoonnumber,meantemp, mintemp, maxtemp, precipitation, warm_precip, cool_precip)%>%
+  mutate(meantemp_lag1=lag(meantemp,order_by=newmoonnumber))
 
-#temp$date=as.Date(paste(temp$year, temp$month, 01), "%Y %m %d")
-
-#manipulate data####
+#create full abundance and covariates dataframe####
 #create dataframe with counts and covariates
-count_covs=right_join(temp,portal_dat1, by=c("year", "month", "day"))%>%
-  select(date,censusdate, year, month, day, treatment, mintemp, maxtemp, meantemp, precipitation,
-         warm_precip, cool_precip, period, species, abundance)
+count_covs=right_join(covars,portal_dat1)%>%
+  select(censusdate, year, month, day, period, treatment, meantemp, meantemp_lag1,
+         warm_precip, cool_precip, species, abundance)
 
 #create distinction between training and test data
-count_dat=count_covs%>% filter(!year<1995, species=="PP")%>%
-  mutate(part = ifelse(year <= 2015,"Train","Test"))
+count_dat=count_covs%>% filter(!year<2010, !period>497, species=="PP")%>%
+  mutate(part = ifelse(year <=2015,"Train","Test"))
 
 ggplot(data=count_dat, aes(period, abundance, color = part)) +
   geom_point(alpha = 0.2) +
@@ -55,7 +55,8 @@ ggplot(data=count_dat, aes(period, abundance, color = part)) +
 moon_foys        <- foy(dates = as.Date(count_dat$censusdate))
 sin2pifoy        <- sin(2 * pi * moon_foys)
 cos2pifoy        <- cos(2 * pi * moon_foys)
-fouriers         <- data.frame(sin2pifoy, cos2pifoy, count_dat$meantemp, count_dat$precipitation)
+fouriers         <- data.frame(sin2pifoy, cos2pifoy, count_dat$meantemp_lag1, count_dat$warm_precip,
+                               count_dat$cool_precip)
 
 #select portion of dataframe for control and exclosure and for predictions
 
@@ -93,16 +94,16 @@ ppm_date2=count_dat[test_dat2,]
 #create dataframe for analysis####
 PPcontrol_dat <- 
   rolling_origin(
-    data       = pp_datc, #all PP control data (1995-2020)
-    initial    = 120, #samples used for modelling (training)
+    data       = pp_datc, #all PP control data (2010-onwards)
+    initial    = length(which(pp_datc$part=="Train")), #samples used for modelling (training)
     assess     = 12, # number of samples used for each assessment resample (horizon)
     cumulative = FALSE #length of analysis set is fixed
   ) 
 
 PPexclosure_dat <- 
   rolling_origin(
-    data       = pp_date, #all PP control data (1995-2020)
-    initial    = 120, #samples used for modelling (training)
+    data       = pp_date, #all PP exclosure data (2010-onwards)
+    initial    = length(which(pp_date$part=="Train")), #samples used for modelling (training)
     assess     = 12, # number of samples used for each assessment resample (horizon)
     cumulative = FALSE #length of analysis set is fixed
   )
@@ -116,7 +117,7 @@ PPexclosure_dat <-
 #assessment(t1) %>% 
 #  tail()
 
-source("D:/WeecologyProjects/portalcasting/Ltcompare_functions.R")
+source("D:/WeecologyProjects/portalcasting/LTcompare_functions.R")
 
 #add column for model(same data and model)####
 PPcontrol_dat$model=map(PPcontrol_dat$splits, rolling_mod)
@@ -157,4 +158,3 @@ PPexclosure_dat$evals_same12=pmap(list(PPexclosure_dat$splits,PPexclosure_dat$mo
 #add column for model evals from switched model (h=12)####
 PPcontrol_dat$evals_switch12=pmap(list(PPcontrol_dat$splits,PPexclosure_dat$model),mod_evals12)
 PPexclosure_dat$evals_switch12=pmap(list(PPexclosure_dat$splits,PPcontrol_dat$model),mod_evals12)
-

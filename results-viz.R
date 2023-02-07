@@ -3,6 +3,7 @@
 require(dplyr)
 require(tidyr)
 require(ggplot2)
+require(ggpubr)
 
 ##coefficients####
 control_int_coefs=PPcontrol_dat$model%>%map(coef)%>%map_dbl(1)
@@ -14,18 +15,25 @@ exclosure_b1_coefs=PPexclosure_dat$model%>%map(coef)%>%map_dbl(2)
 control_a12_coefs=PPcontrol_dat$model%>%map(coef)%>%map_dbl(3)
 exclosure_a12_coefs=PPexclosure_dat$model%>%map(coef)%>%map_dbl(3)
 
-control_temp_coefs=PPcontrol_dat$model%>%map(coef)%>%map_dbl(4)
-exclosure_temp_coefs=PPexclosure_dat$model%>%map(coef)%>%map_dbl(4)
+control_temp1_coefs=PPcontrol_dat$model%>%map(coef)%>%map_dbl(4)
+exclosure_temp1_coefs=PPexclosure_dat$model%>%map(coef)%>%map_dbl(4)
 
-control_prec_coefs=PPcontrol_dat$model%>%map(coef)%>%map_dbl(5)
-exclosure_prec_coefs=PPexclosure_dat$model%>%map(coef)%>%map_dbl(5)
+control_warmprec_coefs=PPcontrol_dat$model%>%map(coef)%>%map_dbl(5)
+exclosure_warmprec_coefs=PPexclosure_dat$model%>%map(coef)%>%map_dbl(5)
 
-prec=cbind(control_prec_coefs, exclosure_prec_coefs)%>%as.data.frame%>%
-  rename("control"="control_prec_coefs", "exclosure"="exclosure_prec_coefs")%>%
-  pivot_longer(cols=c(1:2),names_to="treatment", values_to = "precip")
+control_coolprec_coefs=PPcontrol_dat$model%>%map(coef)%>%map_dbl(6)
+exclosure_coolprec_coefs=PPexclosure_dat$model%>%map(coef)%>%map_dbl(6)
 
-temps=cbind(control_temp_coefs, exclosure_temp_coefs)%>%as.data.frame%>%
-  rename("control"="control_temp_coefs", "exclosure"="exclosure_temp_coefs")%>%
+warmprec=cbind(control_warmprec_coefs, exclosure_warmprec_coefs)%>%as.data.frame%>%
+  rename("control"="control_warmprec_coefs", "exclosure"="exclosure_warmprec_coefs")%>%
+  pivot_longer(cols=c(1:2),names_to="treatment", values_to = "warm_precip")
+
+coolprec=cbind(control_coolprec_coefs, exclosure_coolprec_coefs)%>%as.data.frame%>%
+  rename("control"="control_coolprec_coefs", "exclosure"="exclosure_coolprec_coefs")%>%
+  pivot_longer(cols=c(1:2),names_to="treatment", values_to = "cool_precip")
+
+temps=cbind(control_temp1_coefs, exclosure_temp1_coefs)%>%as.data.frame%>%
+  rename("control"="control_temp1_coefs", "exclosure"="exclosure_temp1_coefs")%>%
   pivot_longer(cols=c(1:2),names_to="treatment", values_to = "temp")
 
 ints=cbind(control_int_coefs, exclosure_int_coefs)%>%as.data.frame%>%
@@ -40,17 +48,17 @@ a12=cbind(control_a12_coefs, exclosure_a12_coefs)%>%as.data.frame%>%
   rename("control"="control_a12_coefs", "exclosure"="exclosure_a12_coefs")%>%
   pivot_longer(cols=c(1:2),names_to="treatment", values_to = "alpha12")
 
-coef_df=as.data.frame(list(ints, b1, a12, temps, prec))%>%select(treatment, intercept, beta1, alpha12, temp,precip)
+coef_df=as.data.frame(list(ints, b1, a12, temps, warmprec, coolprec))%>%select(treatment, intercept, beta1, alpha12, temp,cool_precip, warm_precip)
 
 p1=ggplot(coef_df, aes(x=treatment, y=intercept, col=treatment))+geom_boxplot()+theme_classic()+ylab("mean coefficient estimate")+ggtitle("intercept")
 p2=ggplot(coef_df, aes(x=treatment, y=beta1, col=treatment))+geom_boxplot()+theme_classic()+ylab("mean coefficient estimate")+ggtitle("beta1")
 p3=ggplot(coef_df, aes(x=treatment, y=alpha12, col=treatment))+geom_boxplot()+theme_classic()+ylab("mean coefficient estimate")+ggtitle("alpha12")
-p4=ggplot(coef_df, aes(x=treatment, y=temp, col=treatment))+geom_boxplot()+theme_classic()+ylab("mean coefficient estimate")+ggtitle("mean temperature")
-p5=ggplot(coef_df, aes(x=treatment, y=precip, col=treatment))+geom_boxplot()+theme_classic()+ylab("mean coefficient estimate")+ggtitle("precipitation")
+p4=ggplot(coef_df, aes(x=treatment, y=temp, col=treatment))+geom_boxplot()+theme_classic()+ylab("mean coefficient estimate")+ggtitle("mean temperature (lag 1)")
+p5=ggplot(coef_df, aes(x=treatment, y=warm_precip, col=treatment))+geom_boxplot()+theme_classic()+ylab("mean coefficient estimate")+ggtitle("warm precipitation")
+p6=ggplot(coef_df, aes(x=treatment, y=cool_precip, col=treatment))+geom_boxplot()+theme_classic()+ylab("mean coefficient estimate")+ggtitle("cool precipitation")
 
-coefs_plot=ggarrange(p1,p2,p3,p4,p5, common.legend = T)
+coefs_plot=ggarrange(p1,p2,p3,p4,p5,p6, common.legend = T)
 annotate_figure(coefs_plot, top=text_grob("PP coefficients", face="bold", size=14))
-
 
 ##forecasts####
 
@@ -61,7 +69,7 @@ cont_preds_same=pmap(list(PPcontrol_dat$splits,PPcontrol_dat$model), get_dat)
 #control dat-exclosure mod
 cont_preds_switch=pmap(list(PPcontrol_dat$splits,PPexclosure_dat$model), get_dat)
 
-h=rep(seq(1:127), each=12)
+h=rep(seq(1:360), each=12)
 code1="same"
 code2="switched"
 
@@ -84,10 +92,6 @@ excl_preds_same=pmap(list(PPexclosure_dat$splits,PPexclosure_dat$model), get_dat
 
 #exclosure dat-controlmod
 excl_preds_switch=pmap(list(PPexclosure_dat$splits,PPcontrol_dat$model), get_dat)
-
-h=rep(seq(1:127), each=12)
-code1="same"
-code2="switched"
 
 preds_excl_same=do.call(rbind.data.frame, excl_preds_same)
 preds_excl_same=cbind(preds_excl_same, h, code1)
@@ -167,7 +171,7 @@ ppevals_c=rbind(ppevals_a, ppevals_b)
 
 a1=ggplot(ppevals_c, aes(config_diff, colour = plot, fill=plot))+
   geom_histogram(alpha=0.4, position="identity")+theme_classic()+xlab("RMSE difference (same-switched)")+
-  geom_vline(xintercept=0, lty=2)+ggtitle("PP (h=1)")+facet_wrap(~plot)
+  geom_vline(xintercept=0, lty=2)+ggtitle("PP (h=1)")
 
 #h=6
 ppevals6_a=pp_evals%>%filter(h==6)%>%select(1:2, h)%>%
@@ -182,7 +186,7 @@ ppevals6_c=rbind(ppevals6_a, ppevals6_b)
 
 b1=ggplot(ppevals6_c, aes(config_diff, colour = plot, fill=plot))+
   geom_histogram(alpha=0.4, position="identity")+theme_classic()+xlab("RMSE difference (same-switched)")+
-  geom_vline(xintercept=0, lty=2)+ggtitle("PP (h=6)")+facet_wrap(~plot)
+  geom_vline(xintercept=0, lty=2)+ggtitle("PP (h=6)")
 
 #h=12
 ppevals12_a=pp_evals%>%filter(h==12)%>%select(1:2, h)%>%
@@ -197,7 +201,7 @@ ppevals12_c=rbind(ppevals12_a, ppevals12_b)
 
 c1=ggplot(ppevals12_c, aes(config_diff, colour = plot, fill=plot))+
   geom_histogram(alpha=0.4, position="identity")+theme_classic()+xlab("RMSE difference (same-switched)")+
-  geom_vline(xintercept=0, lty=2)+ggtitle("PP (h=12)")+facet_wrap(~plot)
+  geom_vline(xintercept=0, lty=2)+ggtitle("PP (h=12)")
 
 ggarrange(a1,b1,c1, common.legend = T)
 
@@ -246,7 +250,7 @@ lst1_c$h=as.factor(lst1_c$h)
 pc1_lst1$id=as.vector(unlist(pc1_lst1$id))
 pc1_lst2$id=as.vector(unlist(pc1_lst2$id))
 
-cont_h1=ggplot(lst1_c, aes(x=period, y=pred_score, color=configuration))+
+cont_period1=ggplot(lst1_c, aes(x=period, y=pred_score, color=configuration))+
   geom_line(alpha=0.4)+theme_classic()+ylab("RMSE")+ggtitle("PP control (h=1)")
 
 #exclosure
@@ -275,12 +279,12 @@ lst1_e$h=as.factor(lst1_e$h)
 pe1_lst1$id=as.vector(unlist(pe1_lst1$id))
 pe1_lst2$id=as.vector(unlist(pe1_lst2$id))
 
-excl_h1=ggplot(lst1_e, aes(x=period, y=pred_score, color=configuration))+
+excl_period1=ggplot(lst1_e, aes(x=period, y=pred_score, color=configuration))+
   geom_line(alpha=0.4)+theme_classic()+ylab("RMSE")+ggtitle("PP exclosure (h=1)")
 
 h1_evals=rbind(lst1_c, lst1_e)
 
-ggarrange(cont_h1, excl_h1, common.legend = T)
+ggarrange(cont_period1, excl_period1, common.legend = T)
 
 #h=6###
 #control
@@ -307,10 +311,10 @@ pc6_lst2$id=as.vector(unlist(pc6_lst2$id))
 lst6_c=rbind(pc6_lst1, pc6_lst2)%>%mutate(plot="control")
 lst6_c$h=as.factor(lst6_c$h)
 
-cont_h6=ggplot(lst6_c, aes(x=period, y=pred_score, color=configuration))+
+cont_period6=ggplot(lst6_c, aes(x=period, y=pred_score, color=configuration))+
   geom_line(alpha=0.4)+theme_classic()+ylab("RMSE")+ggtitle("PP control (h=6)")
 
-cont_h6
+cont_period6
 
 #exclosure
 pe6=pmap(list(PPexclosure_dat$splits,PPexclosure_dat$evals_same6, PPexclosure_dat$id), get_dat6)
@@ -335,17 +339,12 @@ lst6_e$h=as.factor(lst6_e$h)
 pe6_lst1$id=as.vector(unlist(pe6_lst1$id))
 pe6_lst2$id=as.vector(unlist(pe6_lst2$id))
 
-exc_h6=ggplot(lst6_e, aes(x=period, y=pred_score, color=configuration))+
+exc_period6=ggplot(lst6_e, aes(x=period, y=pred_score, color=configuration))+
   geom_line(alpha=0.4)+theme_classic()+ylab("RMSE")+ggtitle("PP exclosure (h=6)")
 
+exc_period6
 
-exc_h6=ggplot()+
-  geom_line(data=pe6_lst1, aes(x=period, y=pred_score, group=h, col=configuration))+
-  geom_line(data=pe6_lst2, aes(x=period, y=pred_score, group=h, col=configuration), alpha=0.4)+theme_classic()+ylab("RMSE")+ggtitle("PP exclosure (h=6)")
-
-exc_h6
-
-ggarrange(cont_h6,exc_h6, common.legend = T)
+ggarrange(cont_period6,exc_period6, common.legend = T)
 
 #h=12###
 #control 
@@ -372,21 +371,12 @@ pc12_lst2$id=as.vector(unlist(pc12_lst2$id))
 lst12_c=rbind(pc12_lst1, pc12_lst2)%>%mutate(plot="control")
 lst12_c$h=as.factor(lst12_c$h)
 
-cont_h12=ggplot()+
-  geom_line(data=pc12_lst2, aes(x=h, y=pred_score, group=id, col=configuration))+
-  geom_line(data=pc12_lst1, aes(x=h, y=pred_score,  group=id, col=configuration))+ xlim(1,12)+
-  theme_classic()+ylab("RMSE")+ggtitle("PP control (h=12)")+
-  scale_x_continuous(breaks=c(1,2,3,4,5,6,7,8,9,10,11,12))
-
-cont_h12
-
 cont_period12=ggplot()+
   geom_line(data=pc12_lst1, aes(x=period, y=pred_score, group=h, col=configuration))+
   geom_line(data=pc12_lst2, aes(x=period, y=pred_score, group=h, col=configuration), alpha=0.4)+theme_classic()+ylab("RMSE")+ggtitle("PP control (h=12)")
 
 cont_period12
 
-ggarrange(cont_h12,cont_period12, common.legend = T)
 
 ggplot(lst12_c, aes(x=period, y=pred_score, color=configuration))+
   geom_line(alpha=0.5)+theme_classic()+ylab("RMSE")+ggtitle("PP control (h=12)")
