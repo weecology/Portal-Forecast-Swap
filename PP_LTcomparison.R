@@ -16,82 +16,68 @@ require(ggplot2)
 require(ggplot2)
 require(tidyverse)
 
-#load Portal data####
-portal_dat1=summarise_rodent_data(
-  path = "repo",
-  clean = TRUE,
-  level = "Treatment",
-  type = "Rodents",
-  unknowns = FALSE,
-  shape = "flat",
-  time = "all",
-  output="abundance"
-)%>%mutate(year=lubridate::year(censusdate),
-           month=lubridate::month(censusdate),
-           day=lubridate::day(censusdate))%>%
-  filter(!(treatment%in%c("removal","spectabs")))%>%
-  relocate(c("year", "month", "day"), .before="treatment")
+#portalcasting setup####
+main <- "~/portalcast_directory"
 
-#get covariates
-covars=weather(level="newmoon", fill=TRUE, horizon=365)%>%
+#read data####
+
+pp_cont_interp=read_data(main = main, data_name = "rodents_table", dataset = "controls_interp")%>%
+  select(newmoonnumber, PP)
+pp_excl_interp=read_data(main = main, data_name = "rodents_table", dataset = "exclosures_interp")%>%
+  select(newmoonnumber, PP)
+
+#read covariates data####
+
+covars=weather(level="newmoon", fill=TRUE, horizon=365, path=get_default_data_path())%>%
   select(newmoonnumber,meantemp, mintemp, maxtemp, precipitation, warm_precip, cool_precip)%>%
   mutate(meantemp_lag1=lag(meantemp,order_by=newmoonnumber))
 
-#create full abundance and covariates dataframe####
-#create dataframe with counts and covariates
-count_covs=right_join(covars,portal_dat1)%>%
-  select(censusdate, year, month, day, period, treatment, meantemp, meantemp_lag1,
-         warm_precip, cool_precip, species, abundance)
+ppcontrols_covs=right_join(covars,pp_cont_interp)%>%
+  select(newmoonnumber, meantemp, meantemp_lag1,
+         warm_precip, cool_precip, PP)%>%rename("abundance"="PP")
 
-#create distinction between training and test data
-count_dat=count_covs%>% filter(!year<2010, !period>497, species=="PP")%>%
-  mutate(part = ifelse(year <=2015,"Train","Test"))
+ppexcl_covs=right_join(covars,pp_excl_interp)%>%
+  select(newmoonnumber, meantemp, meantemp_lag1,
+         warm_precip, cool_precip, PP)%>%rename("abundance"="PP")
 
-ggplot(data=count_dat, aes(period, abundance, color = part)) +
-  geom_point(alpha = 0.2) +
-  geom_line()
+cont_dat=ppcontrols_covs%>% filter(!newmoonnumber<=407, !newmoonnumber>526)%>%
+  mutate(part = ifelse(newmoonnumber<=476,"Train","Test"))
+
+excl_dat=ppexcl_covs%>% filter(!newmoonnumber<=407, !newmoonnumber>526)%>%
+  mutate(part = ifelse(newmoonnumber<=476,"Train","Test"))
+
+#look at time-series
+p1=ggplot(data=cont_dat, aes(newmoonnumber, abundance, color = part)) +
+  geom_point(alpha = 0.5, pch=19) +theme_classic()+geom_line()+
+  ggtitle("PP control abundances")
+
+p2=ggplot(data=excl_dat, aes(newmoonnumber, abundance, color = part)) +
+  geom_point(alpha = 0.5, pch=19) +theme_classic()+geom_line()+
+  ggtitle("PP exclosure abundances")
+
+ggarrange(p1, p2, common.legend = T)
 
 #create seasonality
-moon_foys        <- foy(dates = as.Date(count_dat$censusdate))
+moons <- read_moons(main     = main,
+                    settings = directory_settings())
+
+moon_foys        <- foy(dates = as.Date(moons$newmoondate))
 sin2pifoy        <- sin(2 * pi * moon_foys)
 cos2pifoy        <- cos(2 * pi * moon_foys)
-fouriers         <- data.frame(sin2pifoy, cos2pifoy, count_dat$meantemp_lag1, count_dat$warm_precip,
-                               count_dat$cool_precip)
+fouriers         <- data.frame(sin2pifoy, cos2pifoy)
 
-#select portion of dataframe for control and exclosure and for predictions
+match_time=which(moons$newmoonnumber %in% excl_dat$newmoonnumber & moons$newmoonnumber)
+fors=fouriers[match_time,]      
 
-port_moonc=which(count_dat$treatment=="control" & count_dat$part=="Train")
-port_moone=which(count_dat$treatment=="exclosure"& count_dat$part=="Train")
-test_dat1=which(count_dat$part=="Test" & count_dat$treatment=="control")
-test_dat2=which(count_dat$part=="Test" & count_dat$treatment=="exclosure")
-
-predsev1=fouriers[port_moonc,]
-predsev2=fouriers[port_moone,]
-predsev3=fouriers[test_dat1,]
-predsev3=fouriers[test_dat2,]
+#create full data frame
+pp_datc=cbind(fors, cont_dat)
+pp_date=cbind(fors, excl_dat)
 
 #something for seasonal GARCH models?
 past <- list(past_obs = 1, past_mean = 12) #p = 1 (first-order AR),q = 12 (approximately yearly moving average)
 
-#get all pp control data
-pp_datc=count_dat%>%filter(treatment=="control")
+#create rolling origin object for analysis####
 
-#get all pp exclosure data (1995-2020)
-pp_date=count_dat%>%filter(treatment=="exclosure")
-
-#get control training data (1995-2015)
-ppm_datc=count_dat[port_moonc,]
-
-#get exclosure training ata
-ppm_date=count_dat[port_moone,]
-
-#get control test data (2016-2019)
-ppm_datc2=count_dat[test_dat1,]
-
-#get exclosure training ata
-ppm_date2=count_dat[test_dat2,]
-
-#create dataframe for analysis####
 PPcontrol_dat <- 
   rolling_origin(
     data       = pp_datc, #all PP control data (2010-onwards)
@@ -108,24 +94,9 @@ PPexclosure_dat <-
     cumulative = FALSE #length of analysis set is fixed
   )
 
-#check what the dataframe looks like
-#t1=PPcontrol_dat$splits[[2]] 
-#t2=PPexclosure_dat$splits[[2]
-#analysis(t1) %>% 
-#  tail()
-
-#assessment(t1) %>% 
-#  tail()
-
-source("D:/WeecologyProjects/portalcasting/LTcompare_functions.R")
-
 #add column for model(same data and model)####
 PPcontrol_dat$model=map(PPcontrol_dat$splits, rolling_mod)
 PPexclosure_dat$model=map(PPexclosure_dat$splits, rolling_mod)
-
-#add column for model coefs, CAN SKIP THIS####
-#PPcontrol_dat$modcoef_control=map(PPcontrol_dat$splits, rolling_mod_coef)
-#PPexclosure_dat$modcoef_exclosure=map(PPexclosure_dat$splits, rolling_mod_coef)
 
 #add column for model predictions (same data and model)####
 PPcontrol_dat$preds_same=pmap(list(PPcontrol_dat$splits,PPcontrol_dat$model), get_preds)

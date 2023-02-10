@@ -6,7 +6,7 @@ rolling_mod=function(split) {
   analysis_set= analysis(split) #get dataframe
   
   fit_model= tsglm(analysis_set[,"abundance"], model = past, distr = "nbinom", 
-                   xreg  = analysis_set[,8:10], 
+                   xreg  = analysis_set[,5:7], 
                    link  = "log")
 }
 
@@ -18,7 +18,7 @@ rolling_mod_coef= function (split) {
   analysis_set= analysis(split) #get dataframe
   
   fit_model= tsglm(analysis_set[,"abundance"], model = past, distr = "nbinom", 
-                   xreg  = analysis_set[,8:10], 
+                   xreg  = analysis_set[,5:7], 
                    link  = "log")
   
   #get model coefficients    
@@ -34,7 +34,7 @@ get_preds=function(split, model) {
   analysis_set= analysis(split) #get dataframe
   assessment_set=assessment(split)
   
-  preds=predict(model, n.ahead=12, newxreg= assessment_set[,8:10])$pred
+  preds=predict(model, n.ahead=12, newxreg= assessment_set[,5:7])$pred
 }
 
 #create function for evaluating model
@@ -78,46 +78,45 @@ get_dat=function(split, model) {
   assessment_set= assessment(split) #get validation data
   
   holdout= assessment_set[,"abundance"]
-  period= assessment_set[,"period"]
-  year=assessment_set[,"year"]
-  mod_preds=as.integer(predict(model, n.ahead=12, newxreg=assessment_set[,8:10])$pred)
-  hp=cbind(year,period, holdout, mod_preds)
+  moon= assessment_set[,"newmoonnumber"]
+  mod_preds=as.integer(predict(model, n.ahead=12, newxreg=assessment_set[,5:7])$pred)
+  hp=cbind(moon, holdout, mod_preds)
 }
 
 ###for plotting forecast evals
 
-#RMSE~period
+#RMSE~newmoon
 get_dat1=function(split, evals_same, id) {
   
   assessment_set= assessment(split) #get validation data
   
-  period= assessment_set[,"period"][1]
+  newmoon= assessment_set[,"newmoonnumber"][1]
   
   pred_score=evals_same
   id=id
   h=1
-  hp=cbind(period,id, pred_score, h)
+  hp=cbind(newmoon,id, pred_score, h)
 }
 
 get_dat6=function(split, evals_same6, id) {
   
   assessment_set= assessment(split) #get validation data
   
-  period= assessment_set[,"period"][6]
+  newmoon= assessment_set[,"newmoonnumber"][6]
    pred_score=evals_same6
   id=id
   h=6
-  hp=cbind(period,id, pred_score, h)
+  hp=cbind(newmoon,id, pred_score, h)
 }
 
 get_dat12=function(split, evals_same12, id) {
   
   assessment_set= assessment(split) #get validation data
   
-  period= assessment_set[,"period"][12]
+  newmoon= assessment_set[,"newmoonnumber"][12]
   pred_score=evals_same12
   id=id
   h=12
-  hp=cbind(period,id, pred_score, h)
+  hp=cbind(newmoon,id, pred_score, h)
 }
 

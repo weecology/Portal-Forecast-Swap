@@ -69,18 +69,18 @@ cont_preds_same=pmap(list(PPcontrol_dat$splits,PPcontrol_dat$model), get_dat)
 #control dat-exclosure mod
 cont_preds_switch=pmap(list(PPcontrol_dat$splits,PPexclosure_dat$model), get_dat)
 
-h=rep(seq(1:360), each=12)
+m=rep(seq(1:39), each=12)
 code1="same"
 code2="switched"
 
 preds_cont_same=do.call(rbind.data.frame, cont_preds_same)
-preds_cont_same=cbind(preds_cont_same, h, code1)
+preds_cont_same=cbind(preds_cont_same, m, code1)
 preds_cont_switch=do.call(rbind.data.frame, cont_preds_switch)
-preds_cont_switch=cbind(preds_cont_switch, h, code2)
+preds_cont_switch=cbind(preds_cont_switch, m, code2)
 
-preds_plot1=ggplot()+geom_line(data=pp_datc, aes(y=abundance, x=period))+
-  geom_line(data=preds_cont_same, aes(y=mod_preds, x=period, group=h,color="same"), alpha=0.4)+
-  geom_line(data=preds_cont_switch, aes(y=mod_preds, x=period, group=h, color="switched"), alpha=0.4)+
+preds_plot1=ggplot()+geom_line(data=pp_datc, aes(y=abundance, x=newmoonnumber))+
+  geom_line(data=preds_cont_same, aes(y=mod_preds, x=moon, group=h,color="same"), alpha=0.4)+
+  geom_line(data=preds_cont_switch, aes(y=mod_preds, x=moon, group=h, color="switched"), alpha=0.4)+
   theme_classic()+
   ggtitle("PP control")+
   scale_colour_manual(values=c(same="blue", switched="red"), labels=c("same", "switched"))
@@ -94,13 +94,13 @@ excl_preds_same=pmap(list(PPexclosure_dat$splits,PPexclosure_dat$model), get_dat
 excl_preds_switch=pmap(list(PPexclosure_dat$splits,PPcontrol_dat$model), get_dat)
 
 preds_excl_same=do.call(rbind.data.frame, excl_preds_same)
-preds_excl_same=cbind(preds_excl_same, h, code1)
+preds_excl_same=cbind(preds_excl_same, m, code1)
 preds_excl_switch=do.call(rbind.data.frame, excl_preds_switch)
-preds_excl_switch=cbind(preds_excl_switch, h, code2)
+preds_excl_switch=cbind(preds_excl_switch, m, code2)
 
-preds_plot2=ggplot()+geom_line(data=pp_date, aes(y=abundance, x=period))+
-  geom_line(data=preds_excl_same, aes(y=mod_preds, x=period, group=h,color="same"), alpha=0.4)+
-  geom_line(data=preds_excl_switch, aes(y=mod_preds, x=period, group=h, color="switched"), alpha=0.4)+
+preds_plot2=ggplot()+geom_line(data=pp_date, aes(y=abundance, x=newmoonnumber))+
+  geom_line(data=preds_excl_same, aes(y=mod_preds, x=moon, group=h,color="same"), alpha=0.4)+
+  geom_line(data=preds_excl_switch, aes(y=mod_preds, x=moon, group=h, color="switched"), alpha=0.4)+
   theme_classic()+
   ggtitle("PP exclosure")+
   scale_colour_manual(values=c(same="blue", switched="red"), labels=c("same", "switched"))
@@ -171,7 +171,7 @@ ppevals_c=rbind(ppevals_a, ppevals_b)
 
 a1=ggplot(ppevals_c, aes(config_diff, colour = plot, fill=plot))+
   geom_histogram(alpha=0.4, position="identity")+theme_classic()+xlab("RMSE difference (same-switched)")+
-  geom_vline(xintercept=0, lty=2)+ggtitle("PP (h=1)")
+  geom_vline(xintercept=0, lty=2)+ggtitle("PP (h=1)")+facet_wrap(~plot)
 
 #h=6
 ppevals6_a=pp_evals%>%filter(h==6)%>%select(1:2, h)%>%
@@ -186,7 +186,7 @@ ppevals6_c=rbind(ppevals6_a, ppevals6_b)
 
 b1=ggplot(ppevals6_c, aes(config_diff, colour = plot, fill=plot))+
   geom_histogram(alpha=0.4, position="identity")+theme_classic()+xlab("RMSE difference (same-switched)")+
-  geom_vline(xintercept=0, lty=2)+ggtitle("PP (h=6)")
+  geom_vline(xintercept=0, lty=2)+ggtitle("PP (h=6)")+facet_wrap(~plot)
 
 #h=12
 ppevals12_a=pp_evals%>%filter(h==12)%>%select(1:2, h)%>%
@@ -201,7 +201,7 @@ ppevals12_c=rbind(ppevals12_a, ppevals12_b)
 
 c1=ggplot(ppevals12_c, aes(config_diff, colour = plot, fill=plot))+
   geom_histogram(alpha=0.4, position="identity")+theme_classic()+xlab("RMSE difference (same-switched)")+
-  geom_vline(xintercept=0, lty=2)+ggtitle("PP (h=12)")
+  geom_vline(xintercept=0, lty=2)+ggtitle("PP (h=12)")+facet_wrap(~plot)
 
 ggarrange(a1,b1,c1, common.legend = T)
 
@@ -218,9 +218,9 @@ ppevals=pp_evals%>%pivot_longer(cols=1:4, names_to = "config", values_to="RMSE")
                   config=="excl dat-mod" ~"exclosure",
                   config=="excl dat-cont mod" ~"exclosure"))
 
-ppevals_h1=ppevals%>%filter(h==1)
-ppevals_h6=ppevals%>%filter(h==6)
-ppevals_h12=ppevals%>%filter(h==12)
+ppevals_h1=ppevals%>%filter(m==1)
+ppevals_h6=ppevals%>%filter(m==6)
+ppevals_h12=ppevals%>%filter(m==12)
 
 ###RMSE~period#####
 
@@ -235,11 +235,11 @@ pc1_lst1=pc1%>%map_dfr(~as.data.frame(as.matrix(.)))%>%
 pc1_lst2=pc2%>%map_dfr(~as.data.frame(as.matrix(.)))%>%
   rename_with(~sub("V", "column",.))%>%mutate(configuration="switched")
 
-pc1_lst1$period=as.integer(pc1_lst1$period)
+pc1_lst1$newmoon=as.integer(pc1_lst1$newmoon)
 pc1_lst1$pred_score=as.integer(pc1_lst1$pred_score)
 pc1_lst1$h=as.integer(pc1_lst1$h)
 
-pc1_lst2$period=as.integer(pc1_lst2$period)
+pc1_lst2$newmoon=as.integer(pc1_lst2$newmoon)
 pc1_lst2$pred_score=as.integer(pc1_lst2$pred_score)
 pc1_lst2$h=as.integer(pc1_lst2$h)
 
@@ -250,7 +250,7 @@ lst1_c$h=as.factor(lst1_c$h)
 pc1_lst1$id=as.vector(unlist(pc1_lst1$id))
 pc1_lst2$id=as.vector(unlist(pc1_lst2$id))
 
-cont_period1=ggplot(lst1_c, aes(x=period, y=pred_score, color=configuration))+
+cont_period1=ggplot(lst1_c, aes(x=newmoon, y=pred_score, color=configuration))+
   geom_line(alpha=0.4)+theme_classic()+ylab("RMSE")+ggtitle("PP control (h=1)")
 
 #exclosure
@@ -263,14 +263,13 @@ pe1_lst1=pe1%>%map_dfr(~as.data.frame(as.matrix(.)))%>%
 pe1_lst2=pe2%>%map_dfr(~as.data.frame(as.matrix(.)))%>%
   rename_with(~sub("V", "column",.))%>%mutate(configuration="switched")
 
-pe1_lst1$period=as.integer(pe1_lst1$period)
+pe1_lst1$newmoon=as.integer(pe1_lst1$newmoon)
 pe1_lst1$pred_score=as.integer(pe1_lst1$pred_score)
 pe1_lst1$h=as.integer(pe1_lst1$h)
 
-pe1_lst2$period=as.integer(pe1_lst2$period)
+pe1_lst2$newmoon=as.integer(pe1_lst2$newmoon)
 pe1_lst2$pred_score=as.integer(pe1_lst2$pred_score)
 pe1_lst2$h=as.integer(pe1_lst2$h)
-
 
 lst1_e=rbind(pe1_lst1, pe1_lst2)
 lst1_e=as.data.frame(lst1_e)%>%mutate(plot="exclosure")
@@ -279,7 +278,7 @@ lst1_e$h=as.factor(lst1_e$h)
 pe1_lst1$id=as.vector(unlist(pe1_lst1$id))
 pe1_lst2$id=as.vector(unlist(pe1_lst2$id))
 
-excl_period1=ggplot(lst1_e, aes(x=period, y=pred_score, color=configuration))+
+excl_period1=ggplot(lst1_e, aes(x=newmoon, y=pred_score, color=configuration))+
   geom_line(alpha=0.4)+theme_classic()+ylab("RMSE")+ggtitle("PP exclosure (h=1)")
 
 h1_evals=rbind(lst1_c, lst1_e)
@@ -297,11 +296,11 @@ pc6_lst1=pc6%>%map_dfr(~as.data.frame(as.matrix(.)))%>%
 pc6_lst2=pc7%>%map_dfr(~as.data.frame(as.matrix(.)))%>%
   rename_with(~sub("V", "column",.))%>%mutate(configuration="switched")
 
-pc6_lst1$period=as.integer(pc6_lst1$period)
+pc6_lst1$newmoon=as.integer(pc6_lst1$newmoon)
 pc6_lst1$pred_score=as.integer(pc6_lst1$pred_score)
 pc6_lst1$h=as.integer(pc6_lst1$h)
 
-pc6_lst2$period=as.integer(pc6_lst2$period)
+pc6_lst2$newmoon=as.integer(pc6_lst2$newmoon)
 pc6_lst2$pred_score=as.integer(pc6_lst2$pred_score)
 pc6_lst2$h=as.integer(pc6_lst2$h)
 
@@ -311,7 +310,7 @@ pc6_lst2$id=as.vector(unlist(pc6_lst2$id))
 lst6_c=rbind(pc6_lst1, pc6_lst2)%>%mutate(plot="control")
 lst6_c$h=as.factor(lst6_c$h)
 
-cont_period6=ggplot(lst6_c, aes(x=period, y=pred_score, color=configuration))+
+cont_period6=ggplot(lst6_c, aes(x=newmoon, y=pred_score, color=configuration))+
   geom_line(alpha=0.4)+theme_classic()+ylab("RMSE")+ggtitle("PP control (h=6)")
 
 cont_period6
@@ -326,11 +325,11 @@ pe6_lst1=pe6%>%map_dfr(~as.data.frame(as.matrix(.)))%>%
 pe6_lst2=pe7%>%map_dfr(~as.data.frame(as.matrix(.)))%>%
   rename_with(~sub("V", "column",.))%>%mutate(configuration="switched")
 
-pe6_lst1$period=as.integer(pe6_lst1$period)
+pe6_lst1$newmoon=as.integer(pe6_lst1$newmoon)
 pe6_lst1$pred_score=as.integer(pe6_lst1$pred_score)
 pe6_lst1$h=as.integer(pe6_lst1$h)
 
-pe6_lst2$period=as.integer(pe6_lst2$period)
+pe6_lst2$newmoon=as.integer(pe6_lst2$newmoon)
 pe6_lst2$pred_score=as.integer(pe6_lst2$pred_score)
 pe6_lst2$h=as.integer(pe6_lst2$h)
 
@@ -339,7 +338,7 @@ lst6_e$h=as.factor(lst6_e$h)
 pe6_lst1$id=as.vector(unlist(pe6_lst1$id))
 pe6_lst2$id=as.vector(unlist(pe6_lst2$id))
 
-exc_period6=ggplot(lst6_e, aes(x=period, y=pred_score, color=configuration))+
+exc_period6=ggplot(lst6_e, aes(x=newmoon, y=pred_score, color=configuration))+
   geom_line(alpha=0.4)+theme_classic()+ylab("RMSE")+ggtitle("PP exclosure (h=6)")
 
 exc_period6
@@ -357,11 +356,11 @@ pc12_lst1=pc12%>%map_dfr(~as.data.frame(as.matrix(.)))%>%
 pc12_lst2=pc13%>%map_dfr(~as.data.frame(as.matrix(.)))%>%
   rename_with(~sub("V", "column",.))%>%mutate(configuration="switched")
 
-pc12_lst1$period=as.integer(pc12_lst1$period)
+pc12_lst1$newmoon=as.integer(pc12_lst1$newmoon)
 pc12_lst1$pred_score=as.integer(pc12_lst1$pred_score)
 pc12_lst1$h=as.integer(pc12_lst1$h)
 
-pc12_lst2$period=as.integer(pc12_lst2$period)
+pc12_lst2$newmoon=as.integer(pc12_lst2$newmoon)
 pc12_lst2$pred_score=as.integer(pc12_lst2$pred_score)
 pc12_lst2$h=as.integer(pc12_lst2$h)
 
@@ -371,15 +370,11 @@ pc12_lst2$id=as.vector(unlist(pc12_lst2$id))
 lst12_c=rbind(pc12_lst1, pc12_lst2)%>%mutate(plot="control")
 lst12_c$h=as.factor(lst12_c$h)
 
-cont_period12=ggplot()+
-  geom_line(data=pc12_lst1, aes(x=period, y=pred_score, group=h, col=configuration))+
-  geom_line(data=pc12_lst2, aes(x=period, y=pred_score, group=h, col=configuration), alpha=0.4)+theme_classic()+ylab("RMSE")+ggtitle("PP control (h=12)")
+cont_period12=ggplot(lst12_c, aes(x=newmoon, y=pred_score, color=configuration))+
+  geom_line(alpha=0.4)+theme_classic()+ylab("RMSE")+ggtitle("PP control(h=12)")
 
 cont_period12
 
-
-ggplot(lst12_c, aes(x=period, y=pred_score, color=configuration))+
-  geom_line(alpha=0.5)+theme_classic()+ylab("RMSE")+ggtitle("PP control (h=12)")
 
 #exclosure
 pe12=pmap(list(PPexclosure_dat$splits,PPexclosure_dat$evals_same12, PPexclosure_dat$id), get_dat12)
@@ -391,11 +386,11 @@ pe12_lst1=pe12%>%map_dfr(~as.data.frame(as.matrix(.)))%>%
 pe12_lst2=pe13%>%map_dfr(~as.data.frame(as.matrix(.)))%>%
   rename_with(~sub("V", "column",.))%>%mutate(configuration="switched")
 
-pe12_lst1$period=as.integer(pe12_lst1$period)
+pe12_lst1$newmoon=as.integer(pe12_lst1$newmoon)
 pe12_lst1$pred_score=as.integer(pe12_lst1$pred_score)
 pe12_lst1$h=as.integer(pe12_lst1$h)
 
-pe12_lst2$period=as.integer(pe12_lst2$period)
+pe12_lst2$newmoon=as.integer(pe12_lst2$newmoon)
 pe12_lst2$pred_score=as.integer(pe12_lst2$pred_score)
 pe12_lst2$h=as.integer(pe12_lst2$h)
 
@@ -404,11 +399,9 @@ lst12_e$h=as.factor(lst12_e$h)
 pe12_lst1$id=as.vector(unlist(pe12_lst1$id))
 pe12_lst2$id=as.vector(unlist(pe12_lst2$id))
 
-exc_period12=ggplot()+
-  geom_line(data=pe12_lst1, aes(x=period, y=pred_score, group=h, col=configuration))+
-  geom_line(data=pe12_lst2, aes(x=period, y=pred_score, group=h, col=configuration), alpha=0.4)+theme_classic()+ylab("RMSE")+ggtitle("PP exclosure (h=12)")
+exc_period12=ggplot(lst12_e, aes(x=newmoon, y=pred_score, color=configuration))+
+  geom_line(alpha=0.4)+theme_classic()+ylab("RMSE")+ggtitle("PP exclosure (h=12)")
 
 exc_period12
 
 ggarrange(cont_period12,exc_period12, common.legend = T)
-
