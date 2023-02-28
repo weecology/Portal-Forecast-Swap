@@ -46,18 +46,18 @@ cont_dat=ppcontrols_covs%>% filter(!newmoonnumber<=407, !newmoonnumber>526)%>%
 excl_dat=ppexcl_covs%>% filter(!newmoonnumber<=407, !newmoonnumber>526)%>%
   mutate(part = ifelse(newmoonnumber<=476,"Train","Test"))
 
-#look at time-series
-p1=ggplot(data=cont_dat, aes(newmoonnumber, abundance, color = part)) +
+#look at time-series (initial)
+pp1=ggplot(data=cont_dat, aes(newmoonnumber, abundance, color = part)) +
   geom_point(alpha = 0.5, pch=19) +theme_classic()+geom_line()+
   ggtitle("PP control abundances")
 
-p2=ggplot(data=excl_dat, aes(newmoonnumber, abundance, color = part)) +
+pp2=ggplot(data=excl_dat, aes(newmoonnumber, abundance, color = part)) +
   geom_point(alpha = 0.5, pch=19) +theme_classic()+geom_line()+
   ggtitle("PP exclosure abundances")
 
-ggarrange(p1, p2, common.legend = T)
+ggarrange(pp1, pp2, common.legend = T)
 
-#create seasonality
+#create seasonality manually (CAN SKIP)
 moons <- read_moons(main     = main,
                     settings = directory_settings())
 
@@ -74,7 +74,7 @@ pp_datc=cbind(fors, cont_dat)
 pp_date=cbind(fors, excl_dat)
 
 #something for seasonal GARCH models?
-past <- list(past_obs = 1, past_mean = 12) #p = 1 (first-order AR),q = 12 (approximately yearly moving average)
+past <- list(past_obs = c(1,13), external=TRUE) #autoregressive terms (1,13), external effect=T
 
 #create rolling origin object for analysis####
 
@@ -99,33 +99,17 @@ PPcontrol_dat$model=map(PPcontrol_dat$splits, rolling_mod)
 PPexclosure_dat$model=map(PPexclosure_dat$splits, rolling_mod)
 
 #add column for model predictions (same data and model)####
-PPcontrol_dat$preds_same=pmap(list(PPcontrol_dat$splits,PPcontrol_dat$model), get_preds)
-PPexclosure_dat$preds_same=pmap(list(PPexclosure_dat$splits,PPexclosure_dat$model), get_preds)
+PPcontrol_dat$preds_same=pmap(list(PPcontrol_dat$splits,PPcontrol_dat$model, PPcontrol_dat$model), get_preds)
+PPexclosure_dat$preds_same=pmap(list(PPexclosure_dat$splits,PPexclosure_dat$model, PPexclosure_dat$model), get_preds)
 
 #add column for model predictions from switched model####
-PPcontrol_dat$preds_switch=pmap(list(PPcontrol_dat$splits, PPexclosure_dat$model), get_preds)
-PPexclosure_dat$preds_switch=pmap(list(PPexclosure_dat$splits, PPcontrol_dat$model), get_preds)
+PPcontrol_dat$preds_switch=pmap(list(PPcontrol_dat$splits, PPexclosure_dat$model, PPcontrol_dat$model), get_preds)
+PPexclosure_dat$preds_switch=pmap(list(PPexclosure_dat$splits, PPcontrol_dat$model, PPexclosure_dat$model), get_preds)
 
-#add column for model evals from same model(h=1)####
-PPcontrol_dat$evals_same=pmap(list(PPcontrol_dat$splits,PPcontrol_dat$model), mod_evals1)
-PPexclosure_dat$evals_same=pmap(list(PPexclosure_dat$splits,PPexclosure_dat$model), mod_evals1)
+#add column for model evals from same model####
+PPcontrol_dat$evals_same=pmap(list(PPcontrol_dat$splits,PPcontrol_dat$preds_same), mod_evals_same)
+PPexclosure_dat$evals_same=pmap(list(PPexclosure_dat$splits,PPexclosure_dat$preds_same), mod_evals_same)
 
-#add column for model evals from switched model (h=1)####
-PPcontrol_dat$evals_switch=pmap(list(PPcontrol_dat$splits,PPexclosure_dat$model),mod_evals1)
-PPexclosure_dat$evals_switch=pmap(list(PPexclosure_dat$splits,PPcontrol_dat$model),mod_evals1)
-
-#add column for model evals from same model(h=6)####
-PPcontrol_dat$evals_same6=pmap(list(PPcontrol_dat$splits,PPcontrol_dat$model), mod_evals6)
-PPexclosure_dat$evals_same6=pmap(list(PPexclosure_dat$splits,PPexclosure_dat$model), mod_evals6)
-
-#add column for model evals from switched model (h=6)####
-PPcontrol_dat$evals_switch6=pmap(list(PPcontrol_dat$splits,PPexclosure_dat$model),mod_evals6)
-PPexclosure_dat$evals_switch6=pmap(list(PPexclosure_dat$splits,PPcontrol_dat$model),mod_evals6)
-
-#add column for model evals from same model(h=12)####
-PPcontrol_dat$evals_same12=pmap(list(PPcontrol_dat$splits,PPcontrol_dat$model), mod_evals12)
-PPexclosure_dat$evals_same12=pmap(list(PPexclosure_dat$splits,PPexclosure_dat$model), mod_evals12)
-
-#add column for model evals from switched model (h=12)####
-PPcontrol_dat$evals_switch12=pmap(list(PPcontrol_dat$splits,PPexclosure_dat$model),mod_evals12)
-PPexclosure_dat$evals_switch12=pmap(list(PPexclosure_dat$splits,PPcontrol_dat$model),mod_evals12)
+#add column for model evals from switched model####
+PPcontrol_dat$evals_switch=pmap(list(PPcontrol_dat$splits,PPcontrol_dat$preds_switch),mod_evals_switch)
+PPexclosure_dat$evals_switch=pmap(list(PPexclosure_dat$splits,PPexclosure_dat$preds_switch),mod_evals_switch)
