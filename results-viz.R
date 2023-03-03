@@ -46,7 +46,7 @@ b1=cbind(control_b1_coefs, exclosure_b1_coefs)%>%as.data.frame%>%
 
 b13=cbind(control_b13_coefs, exclosure_b13_coefs)%>%as.data.frame%>%
   rename("control"="control_b13_coefs", "exclosure"="exclosure_b13_coefs")%>%
-  pivot_longer(cols=c(1:2),names_to="treatment", values_to = "beta13")b
+  pivot_longer(cols=c(1:2),names_to="treatment", values_to = "beta13")
 coef_df=as.data.frame(list(ints, b1, b13, temps, warmprec, coolprec))%>%select(treatment, intercept, beta1, beta13, temp,cool_precip, warm_precip)
 
 p1=ggviolin(coef_df, x="treatment", y="intercept", fill="treatment",
