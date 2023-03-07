@@ -6,49 +6,50 @@ require(ggplot2)
 require(ggpubr)
 
 ##coefficients####
-control_int_coefs=PBcontrol_dat$model%>%map(coef)%>%map_dbl(1)
-exclosure_int_coefs=PBexclosure_dat$model%>%map(coef)%>%map_dbl(1)
+pbcontrol_int_coefs=PBcontrol_dat$model%>%map(coef)%>%map_dbl(1)
+pbexclosure_int_coefs=PBexclosure_dat$model%>%map(coef)%>%map_dbl(1)
 
-control_b1_coefs=PBcontrol_dat$model%>%map(coef)%>%map_dbl(2)
-exclosure_b1_coefs=PBexclosure_dat$model%>%map(coef)%>%map_dbl(2)
+pbcontrol_b1_coefs=PBcontrol_dat$model%>%map(coef)%>%map_dbl(2)
+pbexclosure_b1_coefs=PBexclosure_dat$model%>%map(coef)%>%map_dbl(2)
 
-control_b13_coefs=PBcontrol_dat$model%>%map(coef)%>%map_dbl(3)
-exclosure_b13_coefs=PBexclosure_dat$model%>%map(coef)%>%map_dbl(3)
+pbcontrol_b13_coefs=PBcontrol_dat$model%>%map(coef)%>%map_dbl(3)
+pbexclosure_b13_coefs=PBexclosure_dat$model%>%map(coef)%>%map_dbl(3)
 
-control_temp1_coefs=PBcontrol_dat$model%>%map(coef)%>%map_dbl(4)
-exclosure_temp1_coefs=PBexclosure_dat$model%>%map(coef)%>%map_dbl(4)
+pbcontrol_temp1_coefs=PBcontrol_dat$model%>%map(coef)%>%map_dbl(4)
+pbexclosure_temp1_coefs=PBexclosure_dat$model%>%map(coef)%>%map_dbl(4)
 
-control_warmprec_coefs=PBcontrol_dat$model%>%map(coef)%>%map_dbl(5)
-exclosure_warmprec_coefs=PBexclosure_dat$model%>%map(coef)%>%map_dbl(5)
+pbcontrol_warmprec_coefs=PBcontrol_dat$model%>%map(coef)%>%map_dbl(5)
+pbexclosure_warmprec_coefs=PBexclosure_dat$model%>%map(coef)%>%map_dbl(5)
 
-control_coolprec_coefs=PBcontrol_dat$model%>%map(coef)%>%map_dbl(6)
-exclosure_coolprec_coefs=PBexclosure_dat$model%>%map(coef)%>%map_dbl(6)
+pbcontrol_coolprec_coefs=PBcontrol_dat$model%>%map(coef)%>%map_dbl(6)
+pbexclosure_coolprec_coefs=PBexclosure_dat$model%>%map(coef)%>%map_dbl(6)
 
-warmprec=cbind(control_warmprec_coefs, exclosure_warmprec_coefs)%>%as.data.frame%>%
-  rename("control"="control_warmprec_coefs", "exclosure"="exclosure_warmprec_coefs")%>%
+pbwarmprec=cbind(pbcontrol_warmprec_coefs, pbexclosure_warmprec_coefs)%>%as.data.frame%>%
+  rename("control"="pbcontrol_warmprec_coefs", "exclosure"="pbexclosure_warmprec_coefs")%>%
   pivot_longer(cols=c(1:2),names_to="treatment", values_to = "warm_precip")
 
-coolprec=cbind(control_coolprec_coefs, exclosure_coolprec_coefs)%>%as.data.frame%>%
-  rename("control"="control_coolprec_coefs", "exclosure"="exclosure_coolprec_coefs")%>%
+pbcoolprec=cbind(pbcontrol_coolprec_coefs, pbexclosure_coolprec_coefs)%>%as.data.frame%>%
+  rename("control"="pbcontrol_coolprec_coefs", "exclosure"="pbexclosure_coolprec_coefs")%>%
   pivot_longer(cols=c(1:2),names_to="treatment", values_to = "cool_precip")
 
-temps=cbind(control_temp1_coefs, exclosure_temp1_coefs)%>%as.data.frame%>%
-  rename("control"="control_temp1_coefs", "exclosure"="exclosure_temp1_coefs")%>%
+pbtemps=cbind(pbcontrol_temp1_coefs, pbexclosure_temp1_coefs)%>%as.data.frame%>%
+  rename("control"="pbcontrol_temp1_coefs", "exclosure"="pbexclosure_temp1_coefs")%>%
   pivot_longer(cols=c(1:2),names_to="treatment", values_to = "temp")
 
-ints=cbind(control_int_coefs, exclosure_int_coefs)%>%as.data.frame%>%
-  rename("control"="control_int_coefs", "exclosure"="exclosure_int_coefs")%>%
+pbints=cbind(pbcontrol_int_coefs, pbexclosure_int_coefs)%>%as.data.frame%>%
+  rename("control"="pbcontrol_int_coefs", "exclosure"="pbexclosure_int_coefs")%>%
   pivot_longer(cols=c(1:2),names_to="treatment", values_to = "intercept")
 
-b1=cbind(control_b1_coefs, exclosure_b1_coefs)%>%as.data.frame%>%
-  rename("control"="control_b1_coefs", "exclosure"="exclosure_b1_coefs")%>%
+pbb1=cbind(pbcontrol_b1_coefs, pbexclosure_b1_coefs)%>%as.data.frame%>%
+  rename("control"="pbcontrol_b1_coefs", "exclosure"="pbexclosure_b1_coefs")%>%
   pivot_longer(cols=c(1:2),names_to="treatment", values_to = "beta1")
 
-b13=cbind(control_b13_coefs, exclosure_b13_coefs)%>%as.data.frame%>%
-  rename("control"="control_b13_coefs", "exclosure"="exclosure_b13_coefs")%>%
+pbb13=cbind(pbcontrol_b13_coefs, pbexclosure_b13_coefs)%>%as.data.frame%>%
+  rename("control"="pbcontrol_b13_coefs", "exclosure"="pbexclosure_b13_coefs")%>%
   pivot_longer(cols=c(1:2),names_to="treatment", values_to = "beta13")
 
-coef_df_PB=as.data.frame(list(ints, b1, b13, temps, warmprec, coolprec))%>%select(treatment, intercept, beta1, beta13, temp,cool_precip, warm_precip)
+coef_df_PB=as.data.frame(list(pbints, pbb1, pbb13, pbtemps, pbwarmprec, pbcoolprec))%>%
+  select(treatment, intercept, beta1, beta13, temp,cool_precip, warm_precip)
 
 pb1=ggviolin(coef_df_PB, x="treatment", y="intercept", fill="treatment",
             palette=c("#69b3a2", "grey"), add="jitter", add.params=list(fill="white"))
@@ -86,8 +87,8 @@ PBpreds_cont_switch=cbind(PBpreds_cont_switch, m, code2)
 
 pbpreds_plot1=ggplot()+
   geom_line(data=pb_datc, aes(y=abundance, x=newmoonnumber))+
-  geom_point(data=PBpreds_cont_same, aes(y=preds_same, x=moon, group=m,color="same"), alpha=0.4, pch=19)+
-  geom_point(data=PBpreds_cont_switch, aes(y=preds_switch, x=moon, group=m, color="switched"), alpha=0.4, pch=19)+
+  #geom_point(data=PBpreds_cont_same, aes(y=preds_same, x=moon, group=m,color="same"), alpha=0.4, pch=19)+
+  #geom_point(data=PBpreds_cont_switch, aes(y=preds_switch, x=moon, group=m, color="switched"), alpha=0.4, pch=19)+
   geom_line(data=PBpreds_cont_same, aes(y=preds_same, x=moon, group=m,color="same"), alpha=0.4)+
   geom_line(data=PBpreds_cont_switch, aes(y=preds_switch, x=moon, group=m, color="switched"), alpha=0.4)+
   theme_classic()+labs(colour="configuration")+
@@ -108,8 +109,8 @@ PBpreds_excl_switch=do.call(rbind.data.frame, pbexcl_preds_switch)
 PBpreds_excl_switch=cbind(PBpreds_excl_switch, m, code2)
 
 pbpreds_plot2=ggplot()+geom_line(data=pb_date, aes(y=abundance, x=newmoonnumber))+
-  geom_point(data=PBpreds_excl_same, aes(y=preds_same, x=moon, group=m,color="same"), alpha=0.4, pch=19)+
-  geom_point(data=PBpreds_excl_switch, aes(y=preds_switch, x=moon, group=m, color="switched"), alpha=0.4, pch=19)+
+ # geom_point(data=PBpreds_excl_same, aes(y=preds_same, x=moon, group=m,color="same"), alpha=0.4, pch=19)+
+  #geom_point(data=PBpreds_excl_switch, aes(y=preds_switch, x=moon, group=m, color="switched"), alpha=0.4, pch=19)+
   geom_line(data=PBpreds_excl_same, aes(y=preds_same, x=moon, group=m,color="same"), alpha=0.4)+
   geom_line(data=PBpreds_excl_switch, aes(y=preds_switch, x=moon, group=m, color="switched"), alpha=0.4)+
   theme_classic()+labs(colour="configuration")+
@@ -118,7 +119,7 @@ pbpreds_plot2=ggplot()+geom_line(data=pb_date, aes(y=abundance, x=newmoonnumber)
 
 pbpreds_plot2
 
-ggarrange(pbpreds_plot1, pbpreds_plot2, common.legend = T)
+ggarrange(pbpreds_plot1, pbpreds_plot2, common.legend = T, nrow=2, ncol=1)
 
 ##forecast evals####
 
@@ -197,6 +198,24 @@ pb_h12=ggplot(pbevals12, aes(score_diff, colour = plot, fill=plot))+
 pb_h12
 
 ggarrange(pb_h1,pb_h6,pb_h12, common.legend = T)
+
+#alternative: density plots####
+
+
+pb_h1=ggdensity(pbevals1, x="score_diff", color="plot",fill="plot", 
+                palette=c("#69b3a2", "grey"), rug=T, add="mean",xlab=F,
+                main="h=1")+geom_vline(xintercept=0, lty=2)
+
+pb_h6=ggdensity(pbevals6, x="score_diff", color="plot",fill="plot", 
+                palette=c("#69b3a2", "grey"), rug=T, add="mean", xlab=F,
+                main="h=6")+geom_vline(xintercept=0, lty=2)
+
+pb_h12=ggdensity(pbevals12, x="score_diff", color="plot",fill="plot", 
+                 palette=c("#69b3a2", "grey"), rug=T, add="mean", xlab="RMSE difference (same-switched)",
+                 main="h=12")+geom_vline(xintercept=0, lty=2)
+
+pbh=ggarrange(pb_h1,pb_h6,pb_h12, common.legend = T, nrow=3)
+annotate_figure(pbh, top = text_grob("C. baileyi", face = "bold", size = 14))
 
 ###RMSE~moon#####
 

@@ -18,11 +18,9 @@ c3=ggplot(coef_df, aes(x=intercept, y=cool_precip, col=treatment))+geom_point()+
   geom_smooth(method="lm")+ylab("cool precipitation")+
   scale_color_manual(values=c(control="#69b3a2", exclosure="grey"))
 
-ggarrange(c1,c2,c3, common.legend = T)
+ggarrange(c1,c2,c3, common.legend = T, nrow=3)
 
 #PB
-coef_df_PB=as.data.frame(list(ints, b1, b13, temps, warmprec, coolprec))%>%select(treatment, intercept, beta1, beta13, temp,cool_precip, warm_precip)
-
 z1=ggplot(coef_df_PB, aes(x=intercept, y=temp, col=treatment))+geom_point()+theme_classic()+
   geom_smooth(method="lm")+ylab("mean temperature(lag=1)")+
   ggtitle("PB")+scale_color_manual(values=c(control="#69b3a2", exclosure="grey"))
@@ -35,7 +33,7 @@ z3=ggplot(coef_df_PB, aes(x=intercept, y=cool_precip, col=treatment))+geom_point
   geom_smooth(method="lm")+ylab("cool precipitation")+
   scale_color_manual(values=c(control="#69b3a2", exclosure="grey"))
 
-ggarrange(z1,z2,z3, common.legend = T)
+ggarrange(z1,z2,z3, common.legend = T, nrow=3)
 
 #covariate correlation####
 get_temp_warmppt_corr=function(split, model){
@@ -185,3 +183,84 @@ par(mfrow=c(1,3))
 hist(meantemp_wprecip$meantemp_lag1, main ="meantemp-warm precip", xlab="covariance")
 hist(meantemp_cprecip$meantemp_lag1, main="meantemp-cool precip", xlab="covariance")
 hist(cprecip_wprecip$cool_precip, main="cool-warm precip", xlab="covariance")
+
+#parameter correlations####
+#PP control
+pp_c1=pmap(list(PPcontrol_dat$splits, PPcontrol_dat$model), get_cov_matrix)
+
+pp_cd1=map(pp_c1, cov2cor)
+pp_cd2=do.call(rbind.data.frame, pp_cd1)
+
+parameters=c("Intercept", "beta_1", "beta_13", "meantemp_lag1", "warm_precip", "cool_precip")
+params=rep(parameters,39)
+
+label_rowsc1=pp_cd2%>%cbind(pp_cd2, params)%>%select(,7:13)
+
+meantemp_wprecip=label_rowsc1%>%select(meantemp_lag1, params)%>%filter(params=="warm_precip")
+meantemp_cprecip=label_rowsc1%>%select(meantemp_lag1, params)%>%filter(params=="cool_precip")
+cprecip_wprecip=label_rowsc1%>%select(cool_precip, params)%>%filter(params=="warm_precip")
+
+par(mfrow=c(1,3))
+hist(meantemp_wprecip$meantemp_lag1, main ="meantemp-warm precip", xlab="correlation")
+hist(meantemp_cprecip$meantemp_lag1, main="meantemp-cool precip", xlab="correlation")
+hist(cprecip_wprecip$cool_precip, main="cool-warm precip", xlab="correlation")
+
+#PP exclosure
+pp_d1=pmap(list(PPexclosure_dat$splits, PPexclosure_dat$model), get_cov_matrix)
+
+pp_cd1=map(pp_d1, cov2cor)
+pp_cd2=do.call(rbind.data.frame, pp_cd1)
+
+parameters=c("Intercept", "beta_1", "beta_13", "meantemp_lag1", "warm_precip", "cool_precip")
+params=rep(parameters,39)
+
+label_rowsc1=pp_cd2%>%cbind(pp_cd2, params)%>%select(,7:13)
+
+meantemp_wprecip=label_rowsc1%>%select(meantemp_lag1, params)%>%filter(params=="warm_precip")
+meantemp_cprecip=label_rowsc1%>%select(meantemp_lag1, params)%>%filter(params=="cool_precip")
+cprecip_wprecip=label_rowsc1%>%select(cool_precip, params)%>%filter(params=="warm_precip")
+
+par(mfrow=c(1,3))
+hist(meantemp_wprecip$meantemp_lag1, main ="meantemp-warm precip", xlab="correlation")
+hist(meantemp_cprecip$meantemp_lag1, main="meantemp-cool precip", xlab="correlation")
+hist(cprecip_wprecip$cool_precip, main="cool-warm precip", xlab="correlation")
+
+#PB control
+pb_c1=pmap(list(PBcontrol_dat$splits, PBcontrol_dat$model), get_cov_matrix)
+
+pb_cd1=map(pb_c1, cov2cor)
+pb_cd2=do.call(rbind.data.frame, pb_cd1)
+
+parameters=c("Intercept", "beta_1", "beta_13", "meantemp_lag1", "warm_precip", "cool_precip")
+params=rep(parameters,50)
+
+label_rowsc1=pb_cd2%>%cbind(pb_cd2, params)%>%select(,7:13)
+
+meantemp_wprecip=label_rowsc1%>%select(meantemp_lag1, params)%>%filter(params=="warm_precip")
+meantemp_cprecip=label_rowsc1%>%select(meantemp_lag1, params)%>%filter(params=="cool_precip")
+cprecip_wprecip=label_rowsc1%>%select(cool_precip, params)%>%filter(params=="warm_precip")
+
+par(mfrow=c(1,3))
+hist(meantemp_wprecip$meantemp_lag1, main ="meantemp-warm precip", xlab="correlation")
+hist(meantemp_cprecip$meantemp_lag1, main="meantemp-cool precip", xlab="correlation")
+hist(cprecip_wprecip$cool_precip, main="cool-warm precip", xlab="correlation")
+
+#PB exclosure
+pb_d1=pmap(list(PBexclosure_dat$splits, PBexclosure_dat$model), get_cov_matrix)
+
+cd1=map(pb_d1, cov2cor)
+cd2=do.call(rbind.data.frame, cd1)
+
+parameters=c("Intercept", "beta_1", "beta_13", "meantemp_lag1", "warm_precip", "cool_precip")
+params=rep(parameters,50)
+
+label_rowsc1=cd2%>%cbind(cd2, params)%>%select(,7:13)
+
+meantemp_wprecip=label_rowsc1%>%select(meantemp_lag1, params)%>%filter(params=="warm_precip")
+meantemp_cprecip=label_rowsc1%>%select(meantemp_lag1, params)%>%filter(params=="cool_precip")
+cprecip_wprecip=label_rowsc1%>%select(cool_precip, params)%>%filter(params=="warm_precip")
+
+par(mfrow=c(1,3))
+hist(meantemp_wprecip$meantemp_lag1, main ="meantemp-warm precip", xlab="correlation")
+hist(meantemp_cprecip$meantemp_lag1, main="meantemp-cool precip", xlab="correlation")
+hist(cprecip_wprecip$cool_precip, main="cool-warm precip", xlab="correlation")

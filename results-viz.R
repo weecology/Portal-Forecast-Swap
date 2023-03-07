@@ -85,8 +85,8 @@ preds_cont_switch=cbind(preds_cont_switch, m, code2)
 
 preds_plot1=ggplot()+
   geom_line(data=pp_datc, aes(y=abundance, x=newmoonnumber))+
-  geom_point(data=preds_cont_same, aes(y=preds_same, x=moon, group=m,color="same"), alpha=0.4, pch=19)+
-  geom_point(data=preds_cont_switch, aes(y=preds_switch, x=moon, group=m, color="switched"), alpha=0.4, pch=19)+
+#  geom_point(data=preds_cont_same, aes(y=preds_same, x=moon, group=m,color="same"), alpha=0.4, pch=19)+
+ # geom_point(data=preds_cont_switch, aes(y=preds_switch, x=moon, group=m, color="switched"), alpha=0.4, pch=19)+
   geom_line(data=preds_cont_same, aes(y=preds_same, x=moon, group=m,color="same"), alpha=0.4)+
   geom_line(data=preds_cont_switch, aes(y=preds_switch, x=moon, group=m, color="switched"), alpha=0.4)+
   theme_classic()+labs(colour="configuration")+
@@ -107,8 +107,8 @@ preds_excl_switch=do.call(rbind.data.frame, excl_preds_switch)
 preds_excl_switch=cbind(preds_excl_switch, m, code2)
 
 preds_plot2=ggplot()+geom_line(data=pp_date, aes(y=abundance, x=newmoonnumber))+
-  geom_point(data=preds_excl_same, aes(y=preds_same, x=moon, group=m,color="same"), alpha=0.4, pch=19)+
-  geom_point(data=preds_excl_switch, aes(y=preds_switch, x=moon, group=m, color="switched"), alpha=0.4, pch=19)+
+ # geom_point(data=preds_excl_same, aes(y=preds_same, x=moon, group=m,color="same"), alpha=0.4, pch=19)+
+#  geom_point(data=preds_excl_switch, aes(y=preds_switch, x=moon, group=m, color="switched"), alpha=0.4, pch=19)+
   geom_line(data=preds_excl_same, aes(y=preds_same, x=moon, group=m,color="same"), alpha=0.4)+
   geom_line(data=preds_excl_switch, aes(y=preds_switch, x=moon, group=m, color="switched"), alpha=0.4)+
   theme_classic()+labs(colour="configuration")+
@@ -117,7 +117,7 @@ preds_plot2=ggplot()+geom_line(data=pp_date, aes(y=abundance, x=newmoonnumber))+
 
 preds_plot2
 
-ggarrange(preds_plot1, preds_plot2, common.legend = T)
+ggarrange(preds_plot1, preds_plot2, common.legend = T, ncol=1, nrow=2)
 
 ##forecast evals####
 
@@ -196,6 +196,23 @@ pp_h12=ggplot(evals12, aes(score_diff, colour = plot, fill=plot))+
 pp_h12
 
 ggarrange(pp_h1,pp_h6,pp_h12, common.legend = T)
+
+#alternative: density plots####
+pp_h1=ggdensity(evals1, x="score_diff", color="plot",fill="plot", 
+                palette=c("#69b3a2", "grey"), rug=T, add="mean",xlab=F,
+                main="h=1")+geom_vline(xintercept=0, lty=2)
+
+pp_h6=ggdensity(evals6, x="score_diff", color="plot",fill="plot", 
+                palette=c("#69b3a2", "grey"), rug=T, add="mean", xlab=F,
+                main="h=6")+geom_vline(xintercept=0, lty=2)
+
+pp_h12=ggdensity(evals12, x="score_diff", color="plot",fill="plot", 
+                 palette=c("#69b3a2", "grey"), rug=T, add="mean", xlab="RMSE difference (same-switched)",
+                 main="h=12")+geom_vline(xintercept=0, lty=2)
+
+pph=ggarrange(pp_h1,pp_h6,pp_h12, common.legend = T, nrow=3)
+annotate_figure(pph, top = text_grob("C. penicillatus", face = "bold", size = 14))
+
 
 ###RMSE~moon#####
 
