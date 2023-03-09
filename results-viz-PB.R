@@ -52,20 +52,20 @@ coef_df_PB=as.data.frame(list(pbints, pbb1, pbb13, pbtemps, pbwarmprec, pbcoolpr
   select(treatment, intercept, beta1, beta13, temp,cool_precip, warm_precip)
 
 pb1=ggviolin(coef_df_PB, x="treatment", y="intercept", fill="treatment",
-            palette=c("#69b3a2", "grey"), add="jitter", add.params=list(fill="white"))
+             palette=c("#69b3a2", "grey"),add="dotplot", add.params=list(fill="black"))+geom_hline(yintercept=0, lty=2)
 pb2=ggviolin(coef_df_PB, x="treatment", y="beta1", fill="treatment",
-            palette=c("#69b3a2", "grey"), add="jitter", add.params=list(fill="white"))
+             palette=c("#69b3a2", "grey"),add="dotplot", add.params=list(fill="black"))+geom_hline(yintercept=0, lty=2)
 pb3=ggviolin(coef_df_PB, x="treatment", y="beta13", fill="treatment",
-            palette=c("#69b3a2", "grey"), add="jitter", add.params=list(fill="white"))
+             palette=c("#69b3a2", "grey"),add="dotplot", add.params=list(fill="black"))+geom_hline(yintercept=0, lty=2)
 pb4=ggviolin(coef_df_PB, x="treatment", y="temp", fill="treatment",
-            palette=c("#69b3a2", "grey"), add="jitter", add.params=list(fill="white"))+ylab("mean temperature (lag=1)")
+             palette=c("#69b3a2", "grey"),add="dotplot", add.params=list(fill="black"))+geom_hline(yintercept=0, lty=2)+ylab("mean temperature (lag=1)")
 pb5=ggviolin(coef_df_PB, x="treatment", y="warm_precip", fill="treatment",
-            palette=c("#69b3a2", "grey"), add="jitter", add.params=list(fill="white"))+ylab("warm precipitation")
+             palette=c("#69b3a2", "grey"),add="dotplot", add.params=list(fill="black"))+geom_hline(yintercept=0, lty=2)+ylab("warm precipitation")
 pb6=ggviolin(coef_df_PB, x="treatment", y="cool_precip", fill="treatment",
-            palette=c("#69b3a2", "grey"), add="jitter", add.params=list(fill="white"))+ylab("cool precipitation")
+             palette=c("#69b3a2", "grey"),add="dotplot", add.params=list(fill="black"))+geom_hline(yintercept=0, lty=2)+ylab("cool precipitation")
 
 coefs_plot_PB=ggarrange(pb1,pb2,pb3,pb4,pb5,pb6, common.legend = T)
-annotate_figure(coefs_plot_PB, top=text_grob("PB coefficients", face="bold", size=14))
+annotate_figure(coefs_plot_PB, top=text_grob("C. baileyi", face="bold", size=14))
 
 ##forecasts####
 
@@ -86,14 +86,14 @@ PBpreds_cont_switch=do.call(rbind.data.frame, pbcont_preds_switch)
 PBpreds_cont_switch=cbind(PBpreds_cont_switch, m, code2)
 
 pbpreds_plot1=ggplot()+
-  geom_line(data=pb_datc, aes(y=abundance, x=newmoonnumber))+
+  geom_line(data=pb_datc, aes(y=abundance, x=newmoonnumber), size=0.75)+
   #geom_point(data=PBpreds_cont_same, aes(y=preds_same, x=moon, group=m,color="same"), alpha=0.4, pch=19)+
   #geom_point(data=PBpreds_cont_switch, aes(y=preds_switch, x=moon, group=m, color="switched"), alpha=0.4, pch=19)+
   geom_line(data=PBpreds_cont_same, aes(y=preds_same, x=moon, group=m,color="same"), alpha=0.4)+
   geom_line(data=PBpreds_cont_switch, aes(y=preds_switch, x=moon, group=m, color="switched"), alpha=0.4)+
   theme_classic()+labs(colour="configuration")+
   ggtitle("PB control")+
-  scale_colour_manual(values=c(same="darkblue", switched="darkred"), labels=c("same", "switched"))
+  scale_colour_manual(values=c(same="darkblue", switched="darkred"), labels=c("matched", "mismatched"))
 
 pbpreds_plot1
 
@@ -108,14 +108,14 @@ PBpreds_excl_same=cbind(PBpreds_excl_same, m, code1)
 PBpreds_excl_switch=do.call(rbind.data.frame, pbexcl_preds_switch)
 PBpreds_excl_switch=cbind(PBpreds_excl_switch, m, code2)
 
-pbpreds_plot2=ggplot()+geom_line(data=pb_date, aes(y=abundance, x=newmoonnumber))+
+pbpreds_plot2=ggplot()+geom_line(data=pb_date, aes(y=abundance, x=newmoonnumber), size=0.75)+
  # geom_point(data=PBpreds_excl_same, aes(y=preds_same, x=moon, group=m,color="same"), alpha=0.4, pch=19)+
   #geom_point(data=PBpreds_excl_switch, aes(y=preds_switch, x=moon, group=m, color="switched"), alpha=0.4, pch=19)+
   geom_line(data=PBpreds_excl_same, aes(y=preds_same, x=moon, group=m,color="same"), alpha=0.4)+
   geom_line(data=PBpreds_excl_switch, aes(y=preds_switch, x=moon, group=m, color="switched"), alpha=0.4)+
   theme_classic()+labs(colour="configuration")+
   ggtitle("PB exclosure")+
-  scale_colour_manual(values=c(same="darkblue", switched="darkred"), labels=c("same", "switched"))
+  scale_colour_manual(values=c(same="darkblue", switched="darkred"), labels=c("matched", "mismatched"))
 
 pbpreds_plot2
 
@@ -201,18 +201,17 @@ ggarrange(pb_h1,pb_h6,pb_h12, common.legend = T)
 
 #alternative: density plots####
 
-
 pb_h1=ggdensity(pbevals1, x="score_diff", color="plot",fill="plot", 
-                palette=c("#69b3a2", "grey"), rug=T, add="mean",xlab=F,
-                main="h=1")+geom_vline(xintercept=0, lty=2)
+                palette=c("#69b3a2", "grey"), rug=T, add="mean",xlab=F, size=1,
+                main="h=1")+geom_vline(xintercept=0)+xlim(-100, 40)
 
 pb_h6=ggdensity(pbevals6, x="score_diff", color="plot",fill="plot", 
-                palette=c("#69b3a2", "grey"), rug=T, add="mean", xlab=F,
-                main="h=6")+geom_vline(xintercept=0, lty=2)
+                palette=c("#69b3a2", "grey"), rug=T, add="mean", xlab=F,size=1,
+                main="h=6")+geom_vline(xintercept=0)+xlim(-100, 40)
 
-pb_h12=ggdensity(pbevals12, x="score_diff", color="plot",fill="plot", 
-                 palette=c("#69b3a2", "grey"), rug=T, add="mean", xlab="RMSE difference (same-switched)",
-                 main="h=12")+geom_vline(xintercept=0, lty=2)
+pb_h12=ggdensity(pbevals12, x="score_diff", color="plot",fill="plot", size=1,
+                 palette=c("#69b3a2", "grey"), rug=T, add="mean", xlab="RMSE difference (matched-mismatched)",
+                 main="h=12")+geom_vline(xintercept=0)+xlim(-100, 40)
 
 pbh=ggarrange(pb_h1,pb_h6,pb_h12, common.legend = T, nrow=3)
 annotate_figure(pbh, top = text_grob("C. baileyi", face = "bold", size = 14))

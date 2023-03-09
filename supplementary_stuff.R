@@ -101,7 +101,7 @@ hist(s33, xlab="Pearson's correlation coefficient", main="warm-cool precipitatio
 #parameter covariances####
 get_cov_matrix=function(split, model) {
   
-  covariance_matrix=invertinfo(model$info.matrix, silent=T, stopOnError = F)$vcov #compute a covariance matrix 
+  covariance_matrix=invertinfo(model$info.matrix_corrected, silent=T, stopOnError = F)$vcov #compute a covariance matrix 
   #from a given Fisher information matrix by inversion (used info.matrix output of model)
   
 }

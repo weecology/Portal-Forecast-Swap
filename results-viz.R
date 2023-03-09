@@ -50,20 +50,20 @@ b13=cbind(control_b13_coefs, exclosure_b13_coefs)%>%as.data.frame%>%
 coef_df=as.data.frame(list(ints, b1, b13, temps, warmprec, coolprec))%>%select(treatment, intercept, beta1, beta13, temp,cool_precip, warm_precip)
 
 p1=ggviolin(coef_df, x="treatment", y="intercept", fill="treatment",
-            palette=c("#69b3a2", "grey"), add="jitter", add.params=list(fill="white"))
+            palette=c("#69b3a2", "grey"),add="dotplot", add.params=list(fill="black"))+geom_hline(yintercept=0, lty=2)
 p2=ggviolin(coef_df, x="treatment", y="beta1", fill="treatment",
-            palette=c("#69b3a2", "grey"), add="jitter", add.params=list(fill="white"))
+            palette=c("#69b3a2", "grey"), add="dotplot", add.params=list(fill="black"))+geom_hline(yintercept=0, lty=2)
 p3=ggviolin(coef_df, x="treatment", y="beta13", fill="treatment",
-            palette=c("#69b3a2", "grey"), add="jitter", add.params=list(fill="white"))
+            palette=c("#69b3a2", "grey"),  add="dotplot", add.params=list(fill="black"))+geom_hline(yintercept=0, lty=2)
 p4=ggviolin(coef_df, x="treatment", y="temp", fill="treatment",
-            palette=c("#69b3a2", "grey"), add="jitter", add.params=list(fill="white"))+ylab("mean temperature (lag=1)")
+            palette=c("#69b3a2", "grey"),  add="dotplot", add.params=list(fill="black"))+geom_hline(yintercept=0, lty=2)+ylab("mean temperature (lag=1)")
 p5=ggviolin(coef_df, x="treatment", y="warm_precip", fill="treatment",
-            palette=c("#69b3a2", "grey"), add="jitter", add.params=list(fill="white"))+ylab("warm precipitation")
+            palette=c("#69b3a2", "grey"),  add="dotplot", add.params=list(fill="black"))+ylab("warm precipitation")+geom_hline(yintercept=0, lty=2)
 p6=ggviolin(coef_df, x="treatment", y="cool_precip", fill="treatment",
-            palette=c("#69b3a2", "grey"), add="jitter", add.params=list(fill="white"))+ylab("cool precipitation")
+            palette=c("#69b3a2", "grey"),add="dotplot", add.params=list(fill="black"))+ylab("cool precipitation")+geom_hline(yintercept=0, lty=2)
 
 coefs_plot=ggarrange(p1,p2,p3,p4,p5,p6, common.legend = T)
-annotate_figure(coefs_plot, top=text_grob("PP coefficients", face="bold", size=14))
+annotate_figure(coefs_plot, top=text_grob("C. penicillatus", face="bold", size=14))
 
 ##forecasts####
 
@@ -84,14 +84,14 @@ preds_cont_switch=do.call(rbind.data.frame, cont_preds_switch)
 preds_cont_switch=cbind(preds_cont_switch, m, code2)
 
 preds_plot1=ggplot()+
-  geom_line(data=pp_datc, aes(y=abundance, x=newmoonnumber))+
+  geom_line(data=pp_datc, aes(y=abundance, x=newmoonnumber), size=0.75)+
 #  geom_point(data=preds_cont_same, aes(y=preds_same, x=moon, group=m,color="same"), alpha=0.4, pch=19)+
  # geom_point(data=preds_cont_switch, aes(y=preds_switch, x=moon, group=m, color="switched"), alpha=0.4, pch=19)+
   geom_line(data=preds_cont_same, aes(y=preds_same, x=moon, group=m,color="same"), alpha=0.4)+
   geom_line(data=preds_cont_switch, aes(y=preds_switch, x=moon, group=m, color="switched"), alpha=0.4)+
   theme_classic()+labs(colour="configuration")+
   ggtitle("PP control")+
-  scale_colour_manual(values=c(same="darkblue", switched="darkred"), labels=c("same", "switched"))
+  scale_colour_manual(values=c(same="darkblue", switched="darkred"), labels=c("matched", "mismatched"))
 
 preds_plot1
 
@@ -106,14 +106,14 @@ preds_excl_same=cbind(preds_excl_same, m, code1)
 preds_excl_switch=do.call(rbind.data.frame, excl_preds_switch)
 preds_excl_switch=cbind(preds_excl_switch, m, code2)
 
-preds_plot2=ggplot()+geom_line(data=pp_date, aes(y=abundance, x=newmoonnumber))+
+preds_plot2=ggplot()+geom_line(data=pp_date, aes(y=abundance, x=newmoonnumber), size=0.75)+
  # geom_point(data=preds_excl_same, aes(y=preds_same, x=moon, group=m,color="same"), alpha=0.4, pch=19)+
 #  geom_point(data=preds_excl_switch, aes(y=preds_switch, x=moon, group=m, color="switched"), alpha=0.4, pch=19)+
   geom_line(data=preds_excl_same, aes(y=preds_same, x=moon, group=m,color="same"), alpha=0.4)+
   geom_line(data=preds_excl_switch, aes(y=preds_switch, x=moon, group=m, color="switched"), alpha=0.4)+
   theme_classic()+labs(colour="configuration")+
   ggtitle("PP exclosure")+
-  scale_colour_manual(values=c(same="darkblue", switched="darkred"), labels=c("same", "switched"))
+  scale_colour_manual(values=c(same="darkblue", switched="darkred"), labels=c("matched", "mismatched"))
 
 preds_plot2
 
@@ -199,20 +199,23 @@ ggarrange(pp_h1,pp_h6,pp_h12, common.legend = T)
 
 #alternative: density plots####
 pp_h1=ggdensity(evals1, x="score_diff", color="plot",fill="plot", 
-                palette=c("#69b3a2", "grey"), rug=T, add="mean",xlab=F,
-                main="h=1")+geom_vline(xintercept=0, lty=2)
+                palette=c("#69b3a2", "grey"), rug=T, add="mean",xlab=F, size=1,
+                main="h=1")+geom_vline(xintercept=0)+xlim(-25, 25)+ ylim(-0.01, 0.5)+
+  annotate("segment", x=-5, y= 0.45, xend=-23, yend=0.45, col="black", size=1, arrow=arrow(length=unit(0.3, "cm"))) +
+  annotate("segment", x=5, y= 0.45, xend=23, yend=0.45, col="black", size=1, arrow=arrow(length=unit(0.3, "cm")))+
+  annotate("text", x=-15, y=0.40, label="matched better fit")+
+  annotate("text", x=13, y=0.40, label="mismatched better fit")
 
 pp_h6=ggdensity(evals6, x="score_diff", color="plot",fill="plot", 
-                palette=c("#69b3a2", "grey"), rug=T, add="mean", xlab=F,
-                main="h=6")+geom_vline(xintercept=0, lty=2)
+                palette=c("#69b3a2", "grey"), rug=T, add="mean", xlab=F,size=1,
+                main="h=6")+geom_vline(xintercept=0)+xlim(-25, 25)+ylim(-0.01, 0.15)
 
-pp_h12=ggdensity(evals12, x="score_diff", color="plot",fill="plot", 
-                 palette=c("#69b3a2", "grey"), rug=T, add="mean", xlab="RMSE difference (same-switched)",
-                 main="h=12")+geom_vline(xintercept=0, lty=2)
+pp_h12=ggdensity(evals12, x="score_diff", color="plot",fill="plot", size=1,
+                 palette=c("#69b3a2", "grey"), rug=T, add="mean", xlab="RMSE difference (matched-mismatched)",
+                 main="h=12")+geom_vline(xintercept=0)+xlim(-25, 25)+ ylim(-0.01, 0.15)
 
 pph=ggarrange(pp_h1,pp_h6,pp_h12, common.legend = T, nrow=3)
 annotate_figure(pph, top = text_grob("C. penicillatus", face = "bold", size = 14))
-
 
 ###RMSE~moon#####
 
