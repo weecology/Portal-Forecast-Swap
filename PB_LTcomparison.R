@@ -41,18 +41,18 @@ pbexcl_covs=right_join(covars,pb_excl_interp)%>%
          warm_precip, cool_precip, PB)%>%rename("abundance"="PB")
 
 #select data from 2000-2010
-cont_dat=pbcontrols_covs%>% filter(!newmoonnumber<279, !newmoonnumber>414)%>%
+pbcont_dat=pbcontrols_covs%>% filter(!newmoonnumber<279, !newmoonnumber>414)%>%
   mutate(part = ifelse(newmoonnumber<=353,"Train","Test"))
 
-excl_dat=pbexcl_covs%>% filter(!newmoonnumber<279, !newmoonnumber>414)%>%
+pbexcl_dat=pbexcl_covs%>% filter(!newmoonnumber<279, !newmoonnumber>414)%>%
   mutate(part = ifelse(newmoonnumber<=353,"Train","Test"))
 
 #look at time-series
-pb1=ggplot(data=cont_dat, aes(newmoonnumber, abundance, color = part)) +
+pb1=ggplot(data=pbcont_dat, aes(newmoonnumber, abundance, color = part)) +
   geom_point(alpha = 0.5, pch=19) +theme_classic()+geom_line()+
   ggtitle("PB control abundances")
 
-pb2=ggplot(data=excl_dat, aes(newmoonnumber, abundance, color = part)) +
+pb2=ggplot(data=pbexcl_dat, aes(newmoonnumber, abundance, color = part)) +
   geom_point(alpha = 0.5, pch=19) +theme_classic()+geom_line()+
   ggtitle("PB exclosure abundances")
 
@@ -67,12 +67,12 @@ sin2pifoy        <- sin(2 * pi * moon_foys)
 cos2pifoy        <- cos(2 * pi * moon_foys)
 fouriers         <- data.frame(sin2pifoy, cos2pifoy)
 
-match_time=which(moons$newmoonnumber %in% excl_dat$newmoonnumber & moons$newmoonnumber)
+match_time=which(moons$newmoonnumber %in% pbexcl_dat$newmoonnumber & moons$newmoonnumber)
 fors=fouriers[match_time,]      
 
 #create full data frame
-pb_datc=cbind(fors, cont_dat)
-pb_date=cbind(fors, excl_dat)
+pb_datc=cbind(fors, pbcont_dat)
+pb_date=cbind(fors, pbexcl_dat)
 
 #something for seasonal GARCH models?
 past <- list(past_obs = c(1,13), external=TRUE) #autoregressive terms (1,13), external effect=T
@@ -81,7 +81,7 @@ past <- list(past_obs = c(1,13), external=TRUE) #autoregressive terms (1,13), ex
 
 PBcontrol_dat <- 
   rolling_origin(
-    data       = pb_datc, #all PB control data (2010-onwards)
+    data       = pb_datc, #all PB control data (2000-2010)
     initial    = length(which(pb_datc$part=="Train")), #samples used for modelling (training)
     assess     = 12, # number of samples used for each assessment resample (horizon)
     cumulative = FALSE #length of analysis set is fixed
@@ -89,7 +89,7 @@ PBcontrol_dat <-
 
 PBexclosure_dat <- 
   rolling_origin(
-    data       = pb_date, #all PB exclosure data (2010-onwards)
+    data       = pb_date, #all PB exclosure data (2000-2010)
     initial    = length(which(pb_date$part=="Train")), #samples used for modelling (training)
     assess     = 12, # number of samples used for each assessment resample (horizon)
     cumulative = FALSE #length of analysis set is fixed

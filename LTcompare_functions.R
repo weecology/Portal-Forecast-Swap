@@ -5,7 +5,7 @@ rolling_mod=function(split) {
   
   analysis_set= analysis(split) #get dataframe
   
-  fit_model= tsglm(analysis_set[,"abundance"], model = past, distr = "poisson", 
+  fit_model= tsglm(analysis_set[,"abundance"], model = past, distr = "nbinom", 
                    xreg  = analysis_set[,5:7], 
                    link  = "log")
 }

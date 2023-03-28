@@ -40,18 +40,18 @@ ppexcl_covs=right_join(covars,pp_excl_interp)%>%
   select(newmoonnumber, meantemp, meantemp_lag1,
          warm_precip, cool_precip, PP)%>%rename("abundance"="PP")
 
-cont_dat=ppcontrols_covs%>% filter(!newmoonnumber<=407, !newmoonnumber>526)%>%
+ppcont_dat=ppcontrols_covs%>% filter(!newmoonnumber<403, !newmoonnumber>526)%>%
   mutate(part = ifelse(newmoonnumber<=476,"Train","Test"))
 
-excl_dat=ppexcl_covs%>% filter(!newmoonnumber<=407, !newmoonnumber>526)%>%
+ppexcl_dat=ppexcl_covs%>% filter(!newmoonnumber<403, !newmoonnumber>526)%>%
   mutate(part = ifelse(newmoonnumber<=476,"Train","Test"))
 
 #look at time-series (initial)
-pp1=ggplot(data=cont_dat, aes(newmoonnumber, abundance, color = part)) +
+pp1=ggplot(data=ppcont_dat, aes(newmoonnumber, abundance, color = part)) +
   geom_point(alpha = 0.5, pch=19) +theme_classic()+geom_line()+
   ggtitle("PP control abundances")
 
-pp2=ggplot(data=excl_dat, aes(newmoonnumber, abundance, color = part)) +
+pp2=ggplot(data=ppexcl_dat, aes(newmoonnumber, abundance, color = part)) +
   geom_point(alpha = 0.5, pch=19) +theme_classic()+geom_line()+
   ggtitle("PP exclosure abundances")
 
@@ -66,12 +66,12 @@ sin2pifoy        <- sin(2 * pi * moon_foys)
 cos2pifoy        <- cos(2 * pi * moon_foys)
 fouriers         <- data.frame(sin2pifoy, cos2pifoy)
 
-match_time=which(moons$newmoonnumber %in% excl_dat$newmoonnumber & moons$newmoonnumber)
+match_time=which(moons$newmoonnumber %in% ppexcl_dat$newmoonnumber & moons$newmoonnumber)
 fors=fouriers[match_time,]      
 
 #create full data frame
-pp_datc=cbind(fors, cont_dat)
-pp_date=cbind(fors, excl_dat)
+pp_datc=cbind(fors, ppcont_dat)
+pp_date=cbind(fors, ppexcl_dat)
 
 #something for seasonal GARCH models?
 past <- list(past_obs = c(1,13), external=TRUE) #autoregressive terms (1,13), external effect=T
@@ -80,7 +80,7 @@ past <- list(past_obs = c(1,13), external=TRUE) #autoregressive terms (1,13), ex
 
 PPcontrol_dat <- 
   rolling_origin(
-    data       = pp_datc, #all PP control data (2010-onwards)
+    data       = pp_datc, #all PP control data (2010-2019)
     initial    = length(which(pp_datc$part=="Train")), #samples used for modelling (training)
     assess     = 12, # number of samples used for each assessment resample (horizon)
     cumulative = FALSE #length of analysis set is fixed
@@ -88,7 +88,7 @@ PPcontrol_dat <-
 
 PPexclosure_dat <- 
   rolling_origin(
-    data       = pp_date, #all PP exclosure data (2010-onwards)
+    data       = pp_date, #all PP exclosure data (2010-2019)
     initial    = length(which(pp_date$part=="Train")), #samples used for modelling (training)
     assess     = 12, # number of samples used for each assessment resample (horizon)
     cumulative = FALSE #length of analysis set is fixed
