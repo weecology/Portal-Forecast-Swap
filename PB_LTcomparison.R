@@ -78,20 +78,24 @@ pb_date=cbind(fors, pbexcl_dat)
 past <- list(past_obs = c(1,13), external=TRUE) #autoregressive terms (1,13), external effect=T
 
 #create rolling origin object for analysis####
+n_moons_yr=13
+n_yrs=5
+n_moons_train=n_moons_yr*n_yrs
+n_moons_test=n_moons_yr*1
 
 PBcontrol_dat <- 
   rolling_origin(
     data       = pb_datc, #all PB control data (2000-2010)
-    initial    = length(which(pb_datc$part=="Train")), #samples used for modelling (training)
-    assess     = 12, # number of samples used for each assessment resample (horizon)
+    initial    = n_moons_train, #samples used for modelling (training)
+    assess     = 13, # number of samples used for each assessment resample (horizon)
     cumulative = FALSE #length of analysis set is fixed
   ) 
 
 PBexclosure_dat <- 
   rolling_origin(
     data       = pb_date, #all PB exclosure data (2000-2010)
-    initial    = length(which(pb_date$part=="Train")), #samples used for modelling (training)
-    assess     = 12, # number of samples used for each assessment resample (horizon)
+    initial    = n_moons_train, #samples used for modelling (training)
+    assess     = 13, # number of samples used for each assessment resample (horizon)
     cumulative = FALSE #length of analysis set is fixed
   )
 

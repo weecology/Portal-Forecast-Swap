@@ -41,7 +41,7 @@ ppexcl_covs=right_join(covars,pp_excl_interp)%>%
          warm_precip, cool_precip, PP)%>%rename("abundance"="PP")
 
 ppcont_dat=ppcontrols_covs%>% filter(!newmoonnumber<403, !newmoonnumber>526)%>%
-  mutate(part = ifelse(newmoonnumber<=476,"Train","Test"))
+  mutate(part = ifelse(newmoonnumber<=476,"Train","Test")) #476 should not be hardcoded
 
 ppexcl_dat=ppexcl_covs%>% filter(!newmoonnumber<403, !newmoonnumber>526)%>%
   mutate(part = ifelse(newmoonnumber<=476,"Train","Test"))
@@ -76,21 +76,26 @@ pp_date=cbind(fors, ppexcl_dat)
 #something for seasonal GARCH models?
 past <- list(past_obs = c(1,13), external=TRUE) #autoregressive terms (1,13), external effect=T
 
+
 #create rolling origin object for analysis####
+n_moons_yr=13
+n_yrs=5
+n_moons_train=n_moons_yr*n_yrs
+n_moons_test=n_moons_yr*1
 
 PPcontrol_dat <- 
   rolling_origin(
     data       = pp_datc, #all PP control data (2010-2019)
-    initial    = length(which(pp_datc$part=="Train")), #samples used for modelling (training)
-    assess     = 12, # number of samples used for each assessment resample (horizon)
-    cumulative = FALSE #length of analysis set is fixed
+    initial    = n_moons_train, #samples used for modelling (training)
+    assess     = n_moons_test, # number of samples used for each assessment resample (horizon)
+    cumulative = FALSE #length of analysis set is fixed; 
   ) 
 
 PPexclosure_dat <- 
   rolling_origin(
     data       = pp_date, #all PP exclosure data (2010-2019)
-    initial    = length(which(pp_date$part=="Train")), #samples used for modelling (training)
-    assess     = 12, # number of samples used for each assessment resample (horizon)
+    initial    = n_moons_train, #samples used for modelling (training)
+    assess     = n_moons_test, # number of samples used for each assessment resample (horizon)
     cumulative = FALSE #length of analysis set is fixed
   )
 
