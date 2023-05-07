@@ -13,18 +13,39 @@ require(yardstick)
 require(Metrics)
 require(tidyr)
 require(ggplot2)
-require(ggplot2)
+require(ggpubr)
 require(tidyverse)
 
-#portalcasting setup####
-main <- "~/portalcast_directory"
+use_default_data_path("D:\\Dropbox (UFL)\\PhD-stuff\\Portal-Forecast-Swap")
 
-#read data####
+rodent_data=summarize_rodent_data(
+  path = get_default_data_path(),
+  clean = TRUE,
+  level="Treatment",
+  type = "Rodents",
+  plots = "Longterm",
+  unknowns = FALSE,
+  shape = "crosstab",
+  time = "newmoon",
+  output = "abundance",
+  na_drop = FALSE,
+  zero_drop = FALSE,
+  min_traps = 1,
+  min_plots = 1,
+  effort = TRUE,
+  download_if_missing = TRUE,
+  quiet = FALSE
+)
 
-pp_cont_interp=read_data(main = main, data_name = "rodents_table", dataset = "controls_interp")%>%
-  select(newmoonnumber, PP)
-pp_excl_interp=read_data(main = main, data_name = "rodents_table", dataset = "exclosures_interp")%>%
-  select(newmoonnumber, PP)
+ppcont_dat=rodent_data%>%
+  select(newmoonnumber,treatment, PP)%>%
+  replace_na(list(treatment='control'))%>%
+  filter(treatment=="control")
+
+ppexcl_dat=rodent_data%>%
+  select(newmoonnumber,treatment, PP)%>%
+  replace_na(list(treatment='exclosure'))%>%
+  filter(treatment=="exclosure")
 
 #read covariates data####
 
@@ -32,50 +53,42 @@ covars=weather(level="newmoon", fill=TRUE, horizon=365, path=get_default_data_pa
   select(newmoonnumber,meantemp, mintemp, maxtemp, precipitation, warm_precip, cool_precip)%>%
   mutate(meantemp_lag1=lag(meantemp,order_by=newmoonnumber))
 
-ppcontrols_covs=right_join(covars,pp_cont_interp)%>%
+ppcont_covs=right_join(covars,ppcont_dat)%>%
   select(newmoonnumber, meantemp, meantemp_lag1,
          warm_precip, cool_precip, PP)%>%rename("abundance"="PP")
 
-ppexcl_covs=right_join(covars,pp_excl_interp)%>%
+ppexcl_covs=right_join(covars,ppexcl_dat)%>%
   select(newmoonnumber, meantemp, meantemp_lag1,
          warm_precip, cool_precip, PP)%>%rename("abundance"="PP")
 
-ppcont_dat=ppcontrols_covs%>% filter(!newmoonnumber<403, !newmoonnumber>526)%>%
+#select data from 2010-2019
+ppcont_covs_ro=ppcont_covs%>% filter(!newmoonnumber<403, !newmoonnumber>526)%>%
   mutate(part = ifelse(newmoonnumber<=476,"Train","Test")) #476 should not be hardcoded
 
-ppexcl_dat=ppexcl_covs%>% filter(!newmoonnumber<403, !newmoonnumber>526)%>%
+ppexcl_covs_ro=ppexcl_covs%>% filter(!newmoonnumber<403, !newmoonnumber>526)%>%
   mutate(part = ifelse(newmoonnumber<=476,"Train","Test"))
 
+ppcont_covs_ro$abundance=round_na.interp(ppcont_covs_ro$abundance)
+ppexcl_covs_ro$abundance=round_na.interp(ppexcl_covs_ro$abundance)
+
 #look at time-series (initial)
-pp1=ggplot(data=ppcont_dat, aes(newmoonnumber, abundance, color = part)) +
+pp1=ggplot(data=ppcont_covs, aes(newmoonnumber, abundance)) +
   geom_point(alpha = 0.5, pch=19) +theme_classic()+geom_line()+
   ggtitle("PP control abundances")
 
-pp2=ggplot(data=ppexcl_dat, aes(newmoonnumber, abundance, color = part)) +
+pp2=ggplot(data=ppexcl_covs, aes(newmoonnumber, abundance, color = part)) +
   geom_point(alpha = 0.5, pch=19) +theme_classic()+geom_line()+
   ggtitle("PP exclosure abundances")
 
 ggarrange(pp1, pp2, common.legend = T)
 
-#create seasonality manually (CAN SKIP)
-moons <- read_moons(main     = main,
-                    settings = directory_settings())
-
-moon_foys        <- foy(dates = as.Date(moons$newmoondate))
-sin2pifoy        <- sin(2 * pi * moon_foys)
-cos2pifoy        <- cos(2 * pi * moon_foys)
-fouriers         <- data.frame(sin2pifoy, cos2pifoy)
-
-match_time=which(moons$newmoonnumber %in% ppexcl_dat$newmoonnumber & moons$newmoonnumber)
-fors=fouriers[match_time,]      
-
-#create full data frame
-pp_datc=cbind(fors, ppcont_dat)
-pp_date=cbind(fors, ppexcl_dat)
+ggplot(data=ppcont_covs, aes(newmoonnumber, abundance)) +
+  geom_point(alpha = 0.5, pch=19) +theme_classic()+geom_line()+
+  ggtitle("PP abundances")+annotate("rect", alpha=.2, fill='red',xmin=403, xmax=468, ymin=0, ymax=90)+
+  annotate("rect", alpha=.2, fill='blue',xmin=469, xmax=526, ymin=0, ymax=90)
 
 #something for seasonal GARCH models?
 past <- list(past_obs = c(1,13), external=TRUE) #autoregressive terms (1,13), external effect=T
-
 
 #create rolling origin object for analysis####
 n_moons_yr=13
@@ -85,7 +98,7 @@ n_moons_test=n_moons_yr*1
 
 PPcontrol_dat <- 
   rolling_origin(
-    data       = pp_datc, #all PP control data (2010-2019)
+    data       = ppcont_covs_ro, #all PP control data (2010-2019)
     initial    = n_moons_train, #samples used for modelling (training)
     assess     = n_moons_test, # number of samples used for each assessment resample (horizon)
     cumulative = FALSE #length of analysis set is fixed; 
@@ -93,7 +106,7 @@ PPcontrol_dat <-
 
 PPexclosure_dat <- 
   rolling_origin(
-    data       = pp_date, #all PP exclosure data (2010-2019)
+    data       = ppexcl_covs_ro, #all PP exclosure data (2010-2019)
     initial    = n_moons_train, #samples used for modelling (training)
     assess     = n_moons_test, # number of samples used for each assessment resample (horizon)
     cumulative = FALSE #length of analysis set is fixed

@@ -6,7 +6,7 @@ rolling_mod=function(split) {
   analysis_set= analysis(split) #get dataframe
   
   fit_model= tsglm(analysis_set[,"abundance"], model = past, distr = "nbinom", 
-                   xreg  = analysis_set[,5:7], 
+                   xreg  = analysis_set[,3:5], 
                    link  = "log")
 }
 
@@ -18,7 +18,7 @@ rolling_mod_coef= function (split) {
   analysis_set= analysis(split) #get dataframe
   
   fit_model= tsglm(analysis_set[,"abundance"], model = past, distr = "nbinom", 
-                   xreg  = analysis_set[,5:7], external=TRUE,
+                   xreg  = analysis_set[,3:5], external=TRUE,
                    link  = "log")
   
   #get model coefficients    
@@ -35,7 +35,7 @@ get_preds=function(split, model,y_source) {
   assessment_set=assessment(split)
   model$ts = y_source$ts
   model$response = y_source$response
-  preds=predict(model, n.ahead=12, newxreg= assessment_set[,5:7])$pred
+  preds=predict(model, n.ahead=13, newxreg= assessment_set[,3:5])$pred
 }
 
 #create function for evaluating model
@@ -49,9 +49,9 @@ mod_evals_same=function(split, preds_same) {
   
   rmse1_same=pmap(list(holdout[1], preds_same[1]), Metrics::rmse)
   rmse6_same=pmap(list(holdout[6], preds_same[6]), Metrics::rmse)
-  rmse12_same=pmap(list(holdout[12], preds_same[12]), Metrics::rmse)
+  rmse13_same=pmap(list(holdout[13], preds_same[13]), Metrics::rmse)
   
-  rmse_same=cbind(rmse1_same, rmse6_same, rmse12_same)
+  rmse_same=cbind(rmse1_same, rmse6_same, rmse13_same)
 }
 
 mod_evals_switch=function(split, preds_switch) {
@@ -64,9 +64,9 @@ mod_evals_switch=function(split, preds_switch) {
   
   rmse1_switch=pmap(list(holdout[1], preds_switch[1]), Metrics::rmse)
   rmse6_switch=pmap(list(holdout[6], preds_switch[6]), Metrics::rmse)
-  rmse12_switch=pmap(list(holdout[12], preds_switch[12]), Metrics::rmse)
+  rmse13_switch=pmap(list(holdout[13], preds_switch[13]), Metrics::rmse)
   
-  rmse_switch=cbind(rmse1_switch, rmse6_switch, rmse12_switch)
+  rmse_switch=cbind(rmse1_switch, rmse6_switch, rmse13_switch)
 }
 
 
@@ -124,17 +124,17 @@ get_evals6_diff=function(split, evals_same, evals_switch, id) {
   hp=cbind(newmoon,id, h, score_same, score_switch, score_diff)
 }
 
-get_evals12_diff=function(split, evals_same, evals_switch, id) {
+get_evals13_diff=function(split, evals_same, evals_switch, id) {
   
   assessment_set= assessment(split) #get validation data
   
-  newmoon= assessment_set[,"newmoonnumber"][12]
+  newmoon= assessment_set[,"newmoonnumber"][13]
   
   score_same=as.vector(as.numeric(evals_same[3]))
   score_switch=as.vector(as.numeric(evals_switch[3]))
   score_diff=score_same-score_switch
   
   id=id
-  h=12
+  h=13
   hp=cbind(newmoon,id, h, score_same, score_switch, score_diff)
 }
