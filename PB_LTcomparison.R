@@ -134,3 +134,10 @@ PBexclosure_dat$evals_same=pmap(list(PBexclosure_dat$splits,PBexclosure_dat$pred
 #add column for model evals from switched model (h=1)####
 PBcontrol_dat$evals_switch=pmap(list(PBcontrol_dat$splits,PBcontrol_dat$preds_switch),mod_evals_switch)
 PBexclosure_dat$evals_switch=pmap(list(PBexclosure_dat$splits,PBexclosure_dat$preds_switch),mod_evals_switch)
+
+#interpolated data length####
+mdate=read.csv("https://raw.githubusercontent.com/weecology/PortalData/main/Rodents/moon_dates.csv")
+
+pbm=mdate%>%filter(!newmoonnumber<279, !newmoonnumber>414)
+pbm_na=pbm%>%filter(is.na(censusdate))
+length(pbm_na$newmoonnumber)/length(pbm$newmoonnumber)

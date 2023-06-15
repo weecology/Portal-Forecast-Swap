@@ -40,9 +40,9 @@ get_temp_warmppt_corr=function(split, model){
   
   analysis_set=analysis(split)
   
-  covariates=analysis_set[,5:7]
+  covariates=analysis_set[,2:5]
   
-  temp_wprecip=cor.test(analysis_set[,5], analysis_set[,6])$estimate
+  temp_wprecip=cor.test(analysis_set[,2], analysis_set[,4])$estimate
   #temp_cprecip=cor.test(analysis_set[,5], analysis_set[,7])$estimate
   #wprecip_cprecip=cor.test(analysis_set[,6], analysis_set[,7])$estimate
   
@@ -53,9 +53,9 @@ get_temp_coolppt_corr=function(split, model){
   
   analysis_set=analysis(split)
   
-  covariates=analysis_set[,5:7]
+  covariates=analysis_set[,2:5]
   
-  temp_cprecip=cor.test(analysis_set[,5], analysis_set[,7])$estimate
+  temp_cprecip=cor.test(analysis_set[,2], analysis_set[,5])$estimate
   
 }
 
@@ -63,9 +63,9 @@ get_warmppt_coolppt_corr=function(split, model){
   
   analysis_set=analysis(split)
   
-  covariates=analysis_set[,5:7]
+  covariates=analysis_set[,2:5]
   
-  wprecip_cprecip=cor.test(analysis_set[,6], analysis_set[,7])$estimate
+  wprecip_cprecip=cor.test(analysis_set[,4], analysis_set[,5])$estimate
   
 }
 
