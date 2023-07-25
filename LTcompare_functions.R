@@ -5,27 +5,10 @@ rolling_mod=function(split) {
   
   analysis_set= analysis(split) #get dataframe
   
-  fit_model= tsglm(analysis_set[,"abundance"], model = past, distr = "nbinom", 
+  fit_model= tsglm(analysis_set[,"abundance"], model = list(past_obs=c(1,13), external=TRUE), 
+                   distr = "nbinom", 
                    xreg  = analysis_set[,3:5], 
                    link  = "log")
-}
-
-
-#create function to get model coefficients
-
-rolling_mod_coef= function (split) {
-  
-  analysis_set= analysis(split) #get dataframe
-  
-  fit_model= tsglm(analysis_set[,"abundance"], model = past, distr = "nbinom", 
-                   xreg  = analysis_set[,3:5], external=TRUE,
-                   link  = "log")
-  
-  #get model coefficients    
-  mod_coef=fit_model%>%
-    coef()%>%
-    tidy()
-  
 }
 
 #create function to generate predictions for each model split

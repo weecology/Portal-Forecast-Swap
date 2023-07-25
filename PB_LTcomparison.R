@@ -89,9 +89,6 @@ ggplot(data=pbcont_covs, aes(newmoonnumber, abundance)) +
   ggtitle("PB abundances")+annotate("rect", alpha=.2, fill='red',xmin=279, xmax=344, ymin=0, ymax=60)+
   annotate("rect", alpha=.2, fill='blue',xmin=345, xmax=414, ymin=0, ymax=60)
 
-#something for seasonal GARCH models?
-past <- list(past_obs = c(1,13), external=TRUE) #autoregressive terms (1,13), external effect=T
-
 #create rolling origin object for analysis####
 n_moons_yr=13
 n_yrs=5
