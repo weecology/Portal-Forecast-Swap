@@ -69,11 +69,8 @@ pbexcl_covs=right_join(covars,pbexcl_dat)%>%
          warm_precip, cool_precip, PB)%>%rename("abundance"="PB")
 
 #select data from Dec 1999- June 2009
-pbcont_covs_dat=pbcont_covs%>%
-  filter(!newmoonnumber<278, !newmoonnumber>396)
-
-pbexcl_covs_dat=pbexcl_covs%>%
-  filter(!newmoonnumber<278, !newmoonnumber>396)
+pbcont_covs_dat=pbcont_covs%>%filter(!newmoonnumber<278, !newmoonnumber>396)
+pbexcl_covs_dat=pbexcl_covs%>%filter(!newmoonnumber<278, !newmoonnumber>396)
 
 #interpolate missing data
 pbcont_covs_dat$abundance=round_na.interp(pbcont_covs_dat$abundance)
@@ -89,7 +86,7 @@ PBcontrol_dat <-
   rolling_origin(
     data       = pbcont_covs_dat, #all PB control data (1999-2009)
     initial    = n_moons_train, #samples used for modelling (training)
-    assess     = 12, # number of samples used for each assessment resample (horizon)
+    assess     = n_moons_yr, # number of samples used for each assessment resample (horizon)
     cumulative = FALSE #length of analysis set is fixed
   ) 
 
@@ -97,7 +94,7 @@ PBexclosure_dat <-
   rolling_origin(
     data       = pbexcl_covs_dat, #all PB exclosure data (1999-2009)
     initial    = n_moons_train, #samples used for modelling (training)
-    assess     = 12, # number of samples used for each assessment resample (horizon)
+    assess     = n_moons_yr, # number of samples used for each assessment resample (horizon)
     cumulative = FALSE #length of analysis set is fixed
   )
 
@@ -360,52 +357,72 @@ pbevals12$score_diff=as.numeric(pbevals12$score_diff)
 ##Brier scores####
 
 #control###
+
+#combine predictions on same and switched models for control data
 pb_preds_control=left_join(PBpreds_cont_same, PBpreds_cont_switch, by=c("moon", "holdout", "m"))
 
+#calculate brier score for same models
 pb_brier_cont1=scoring(pred=pb_preds_control$preds_same, response=pb_preds_control$holdout,distr="nbinom", distrcoefs=2, individual=TRUE,
                        cutoff=1000)%>%select(quadratic)
 
+#combine same model predictions and brier score dataframes
 pb_brier_cont_same=cbind(pb_preds_control, pb_brier_cont1)%>%rename(quadratic_same=quadratic)
 
+#calculate brier score for switched models
 pb_brier_cont2=scoring(pred=pb_preds_control$preds_switch, response=pb_preds_control$holdout,distr="nbinom", distrcoefs=2, individual=TRUE,
                        cutoff=1000)%>%select(quadratic)
 
+#combine switched model predictions and brier score dataframes
 pb_brier_cont_switch=cbind(pb_preds_control, pb_brier_cont2)%>%rename(quadratic_switch=quadratic)
 
+#calculate brier score differences
 pb_brier_control=left_join(pb_brier_cont_same, pb_brier_cont_switch)%>%mutate(treatment="control",brier_diff=quadratic_same-quadratic_switch)
 
+#select relevant rows with horizons 1,6 12
 pb_brier_control1=pb_brier_control%>%group_by(m)%>%slice(which(row_number()%in%c(1,6,12)))
 
+#subdivide into each horizon for easier plotting
 pbh1=pb_brier_control1%>%group_by(m)%>%slice_head(n=1)
 pbh6=pb_brier_control1%>%group_by(m)%>%slice(which(row_number()==2))%>%mutate(horizon="6")
 pbh12=pb_brier_control1%>%group_by(m)%>%slice(which(row_number()==3))%>%mutate(horizon="12")
 
+#combine all 3 horizons
 pbh=rbind(pbh1,pbh6,pbh12)
 
 #exclosure###
 
+#combine predictions on same and switched models for exclosure data
 pb_preds_exclosure=left_join(PBpreds_excl_same, PBpreds_excl_switch, by=c("moon", "holdout", "m"))
 
+#calculate brier score for same models
 pb_brier_excl1=scoring(pred=pb_preds_exclosure$preds_same, response=pb_preds_exclosure$holdout,distr="nbinom", distrcoefs=2, individual=TRUE,
                        cutoff=1000)%>%select(quadratic)
 
+#combine same model predictions and brier score dataframes
 pb_brier_excl_same=cbind(pb_preds_exclosure, pb_brier_excl1)%>%rename(quadratic_same=quadratic)
 
+#calculate brier score for switched models
 pb_brier_excl2=scoring(pred=pb_preds_exclosure$preds_switch, response=pb_preds_exclosure$holdout,distr="nbinom", distrcoefs=2, individual=TRUE,
                        cutoff=1000)%>%select(quadratic)
 
+#combine switched model predictions and brier score dataframes
 pb_brier_excl_switch=cbind(pb_preds_exclosure, pb_brier_excl2)%>%rename(quadratic_switch=quadratic)
 
+#calculate brier score differences
 pb_brier_exclosure=left_join(pb_brier_excl_same, pb_brier_excl_switch)%>%mutate(treatment="removal",brier_diff=quadratic_same-quadratic_switch)
 
+#select relevant rows with horizons 1,6 12
 pb_brier_exclosure1=pb_brier_exclosure%>%group_by(m)%>%slice(which(row_number()%in%c(1,6,12)))
 
+#subdivide into each horizon for easier plotting
 pbbx1=pb_brier_exclosure1%>%group_by(m)%>%slice_head(n=1)%>%mutate(horizon="1")
 pbbx6=pb_brier_exclosure1%>%group_by(m)%>%slice(which(row_number()==2))%>%mutate(horizon="6")
 pbbx12=pb_brier_exclosure1%>%group_by(m)%>%slice(which(row_number()==3))%>%mutate(horizon="12")
 
+#combine all 3 horizons
 pbbx=rbind(pbbx1,pbbx6, pbbx12)
 
+#combine control and exclosure and filter out per horizon for plotting
 pb_briers1=rbind(pbb,pbbx)%>%filter(horizon==1)
 pb_briers6=rbind(pbb,pbbx)%>%filter(horizon==6)
 pb_briers12=rbind(pbb,pbbx)%>%filter(horizon==12)
