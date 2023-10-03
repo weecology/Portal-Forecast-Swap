@@ -121,3 +121,18 @@ get_evals12_diff=function(split, evals_same, evals_switch, id) {
   h=12
   hp=cbind(newmoon,id, h, score_same, score_switch, score_diff)
 }
+
+get_pvalue=function(model) {
+  
+  coef_est=tscount::se(model)$est
+  coef_ci_u=tscount::se(model)$ci[,"upper"]
+  coef_ci_l=tscount::se(model)$ci[,"lower"]
+  
+  coef_se= (coef_ci_u - coef_ci_l)/ (2*1.96)
+  
+  coef_z=coef_est/coef_se
+  
+  coef_P = list(round(exp(-0.717 * coef_z - 0.416* ((coef_z)^2)), digits=4))
+  
+}
+
