@@ -265,12 +265,12 @@ pbcoolprec_pval=cbind(pbcont_cprec_pval, pbexcl_cprec_pval)%>%as.data.frame%>%
   pivot_longer(cols=c(1:2),names_to="treatment", values_to = "raw_pvalue")
 
 #pairwise t-test
-pairwise.t.test(pbint_pval$raw_pvalue, pbint_pval$treatment, p.adjust.method="fdr") # <0.05
-pairwise.t.test(pbb1_pval$raw_pvalue, pbb1_pval$treatment, p.adjust.method="fdr") #0.32
-pairwise.t.test(pbb12_pval$raw_pvalue, pbb12_pval$treatment, p.adjust.method="fdr") #0.009
-pairwise.t.test(pbtemp_pval$raw_pvalue, pbtemp_pval$treatment, p.adjust.method="fdr") #0.004
-pairwise.t.test(pbwarmprec_pval$raw_pvalue, pbwarmprec_pval$treatment, p.adjust.method="fdr") #0.32
-pairwise.t.test(pbcoolprec_pval$raw_pvalue, pbcoolprec_pval$treatment, p.adjust.method="fdr")  #<0.05
+pairwise.t.test(pbint_pval$raw_pvalue, pbint_pval$treatment, p.adjust.method="fdr", pool.sd=FALSE, paired=TRUE) 
+pairwise.t.test(pbb1_pval$raw_pvalue, pbb1_pval$treatment, p.adjust.method="fdr", pool.sd=FALSE, paired=TRUE) 
+pairwise.t.test(pbb12_pval$raw_pvalue, pbb12_pval$treatment, p.adjust.method="fdr", pool.sd=FALSE, paired=TRUE) 
+pairwise.t.test(pbtemp_pval$raw_pvalue, pbtemp_pval$treatment, p.adjust.method="fdr", pool.sd=FALSE, paired=TRUE) 
+pairwise.t.test(pbwarmprec_pval$raw_pvalue, pbwarmprec_pval$treatment, p.adjust.method="fdr",pool.sd=FALSE, paired=TRUE) 
+pairwise.t.test(pbcoolprec_pval$raw_pvalue, pbcoolprec_pval$treatment, p.adjust.method="fdr", pool.sd=FALSE, paired=TRUE) 
 
 #add adjusted p-values (FDR)
 pbint_pval$FDR=p.adjust(pbint_pval$raw_pvalue, method="fdr")

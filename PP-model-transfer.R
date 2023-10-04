@@ -147,32 +147,32 @@ ppexclosure_warmprec_coefs=PPexclosure_dat$model%>%map(coef)%>%map_dbl(5)
 ppcontrol_coolprec_coefs=PPcontrol_dat$model%>%map(coef)%>%map_dbl(6)
 ppexclosure_coolprec_coefs=PPexclosure_dat$model%>%map(coef)%>%map_dbl(6)
 
-warmprecpp=cbind(control_warmprec_coefs, exclosure_warmprec_coefs)%>%as.data.frame%>%
-  rename("control"="control_warmprec_coefs", "removal"="exclosure_warmprec_coefs")%>%
+warmprecpp=cbind(ppcontrol_warmprec_coefs, ppexclosure_warmprec_coefs)%>%as.data.frame%>%
+  rename("control"="ppcontrol_warmprec_coefs", "removal"="ppexclosure_warmprec_coefs")%>%
   pivot_longer(cols=c(1:2),names_to="treatment", values_to = "warm_precip")
 
-coolprecpp=cbind(control_coolprec_coefs, exclosure_coolprec_coefs)%>%as.data.frame%>%
-  rename("control"="control_coolprec_coefs", "removal"="exclosure_coolprec_coefs")%>%
+coolprecpp=cbind(ppcontrol_coolprec_coefs, ppexclosure_coolprec_coefs)%>%as.data.frame%>%
+  rename("control"="ppcontrol_coolprec_coefs", "removal"="ppexclosure_coolprec_coefs")%>%
   pivot_longer(cols=c(1:2),names_to="treatment", values_to = "cool_precip")
 
-tempspp=cbind(control_temp1_coefs, exclosure_temp1_coefs)%>%as.data.frame%>%
-  rename("control"="control_temp1_coefs", "removal"="exclosure_temp1_coefs")%>%
+tempspp=cbind(ppcontrol_temp1_coefs, ppexclosure_temp1_coefs)%>%as.data.frame%>%
+  rename("control"="ppcontrol_temp1_coefs", "removal"="ppexclosure_temp1_coefs")%>%
   pivot_longer(cols=c(1:2),names_to="treatment", values_to = "temp")
 
-intspp=cbind(control_int_coefs, exclosure_int_coefs)%>%as.data.frame%>%
-  rename("control"="control_int_coefs", "removal"="exclosure_int_coefs")%>%
+intspp=cbind(ppcontrol_int_coefs, ppexclosure_int_coefs)%>%as.data.frame%>%
+  rename("control"="ppcontrol_int_coefs", "removal"="ppexclosure_int_coefs")%>%
   pivot_longer(cols=c(1:2),names_to="treatment", values_to = "intercept")
 
-b1pp=cbind(control_b1_coefs, exclosure_b1_coefs)%>%as.data.frame%>%
-  rename("control"="control_b1_coefs", "removal"="exclosure_b1_coefs")%>%
+b1pp=cbind(ppcontrol_b1_coefs, ppexclosure_b1_coefs)%>%as.data.frame%>%
+  rename("control"="ppcontrol_b1_coefs", "removal"="ppexclosure_b1_coefs")%>%
   pivot_longer(cols=c(1:2),names_to="treatment", values_to = "beta1")
 
-b12pp=cbind(control_b12_coefs, exclosure_b12_coefs)%>%as.data.frame%>%
-  rename("control"="control_b12_coefs", "removal"="exclosure_b12_coefs")%>%
+b12pp=cbind(ppcontrol_b12_coefs, ppexclosure_b12_coefs)%>%as.data.frame%>%
+  rename("control"="ppcontrol_b12_coefs", "removal"="ppexclosure_b12_coefs")%>%
   pivot_longer(cols=c(1:2),names_to="treatment", values_to = "beta12")
 
 coef_df_PP=as.data.frame(list(intspp, b1pp, b12pp, tempspp, warmprecpp, coolprecpp))%>%
-  select(treatment, intercept, beta1, beta13, temp,cool_precip, warm_precip)
+  select(treatment, intercept, beta1, beta12, temp,cool_precip, warm_precip)
 
 ppint_cont=coef_df_PP%>%filter(treatment=="control")%>%select(intercept)%>%rename("control"="intercept")
 ppint_excl=coef_df_PP%>%filter(treatment=="removal")%>%select(intercept)%>%rename("removal"="intercept")
@@ -180,8 +180,8 @@ ppint_excl=coef_df_PP%>%filter(treatment=="removal")%>%select(intercept)%>%renam
 ppar1_cont=coef_df_PP%>%filter(treatment=="control")%>%select(beta1)%>%rename("control"="beta1")
 ppar1_excl=coef_df_PP%>%filter(treatment=="removal")%>%select(beta1)%>%rename("removal"="beta1")
 
-ppar12_cont=coef_df_PP%>%filter(treatment=="control")%>%select(beta13)%>%rename("control"="beta12")
-ppar12_excl=coef_df_PP%>%filter(treatment=="removal")%>%select(beta13)%>%rename("removal"="beta12")
+ppar12_cont=coef_df_PP%>%filter(treatment=="control")%>%select(beta12)%>%rename("control"="beta12")
+ppar12_excl=coef_df_PP%>%filter(treatment=="removal")%>%select(beta12)%>%rename("removal"="beta12")
 
 pptemp_cont=coef_df_PP%>%filter(treatment=="control")%>%select(temp)%>%rename("control"="temp")
 pptemp_excl=coef_df_PP%>%filter(treatment=="removal")%>%select(temp)%>%rename("removal"="temp")
@@ -200,12 +200,12 @@ ppo5=cbind(ppcprec_cont, ppcprec_excl)
 ppo6=cbind(ppwprec_cont, ppwprec_excl)
 
 ###directional shift####
-length(which(ppo1>0))/96
-length(which(ppo2>0))/96
-length(which(ppo3>0))/96
-length(which(ppo4>0))/96
-length(which(ppo5>0))/96
-length(which(ppo6>0))/96
+length(which(ppo1>0))/90
+length(which(ppo2>0))/90
+length(which(ppo3>0))/90
+length(which(ppo4>0))/90
+length(which(ppo5>0))/90
+length(which(ppo6>0))/90
 
 ##degree of overlap####
 overlap(ppo1, plot=T)
@@ -220,7 +220,7 @@ overlap(ppo6, plot=T)
 #calculate pvalue following: https://www.bmj.com/content/343/bmj.d2304 
 
 PPcontrol_dat$pvalue=map(PPcontrol_dat$model, get_pvalue)
-PPexclosure_dat$pvalue=map(PBPxclosure_dat$model, get_pvalue)
+PPexclosure_dat$pvalue=map(PPexclosure_dat$model, get_pvalue)
 
 #select pvalues for each parameter
 
@@ -265,12 +265,12 @@ ppcoolprec_pval=cbind(ppcont_cprec_pval, ppexcl_cprec_pval)%>%as.data.frame%>%
   pivot_longer(cols=c(1:2),names_to="treatment", values_to = "raw_pvalue")
 
 #pairwise t-test
-pairwise.t.test(ppint_pval$raw_pvalue, ppint_pval$treatment, p.adjust.method="fdr")
-pairwise.t.test(ppb1_pval$raw_pvalue, ppb1_pval$treatment, p.adjust.method="fdr") 
-pairwise.t.test(ppb12_pval$raw_pvalue, ppb12_pval$treatment, p.adjust.method="fdr") 
-pairwise.t.test(pptemp_pval$raw_pvalue, pptemp_pval$treatment, p.adjust.method="fdr") 
-pairwise.t.test(ppwarmprec_pval$raw_pvalue, ppwarmprec_pval$treatment, p.adjust.method="fdr") 
-pairwise.t.test(ppcoolprec_pval$raw_pvalue, ppcoolprec_pval$treatment, p.adjust.method="fdr")  
+pairwise.t.test(ppint_pval$raw_pvalue, ppint_pval$treatment, p.adjust.method="fdr", pool.sd=FALSE, paired=TRUE)
+pairwise.t.test(ppb1_pval$raw_pvalue, ppb1_pval$treatment, p.adjust.method="fdr", pool.sd=FALSE, paired=TRUE) 
+pairwise.t.test(ppb12_pval$raw_pvalue, ppb12_pval$treatment, p.adjust.method="fdr", pool.sd=FALSE, paired=TRUE) 
+pairwise.t.test(pptemp_pval$raw_pvalue, pptemp_pval$treatment, p.adjust.method="fdr", pool.sd=FALSE, paired=TRUE) 
+pairwise.t.test(ppwarmprec_pval$raw_pvalue, ppwarmprec_pval$treatment, p.adjust.method="fdr", pool.sd=FALSE, paired=TRUE) 
+pairwise.t.test(ppcoolprec_pval$raw_pvalue, ppcoolprec_pval$treatment, p.adjust.method="fdr", pool.sd=FALSE, paired=TRUE)  
 
 #add adjusted p-values (FDR)
 ppint_pval$FDR=p.adjust(ppint_pval$raw_pvalue, method="fdr")
@@ -338,7 +338,7 @@ ppevals6$newmoon=as.integer(ppevals6$newmoon)
 ppevals6$h=as.integer(ppevals6$h)
 ppevals6$score_same=as.numeric(ppevals6$score_same)
 ppevals6$score_switch=as.numeric(ppevals6$score_switch)
-ppevals6$score_diff=as.numeric(pevals6$score_diff)
+ppevals6$score_diff=as.numeric(ppevals6$score_diff)
 
 #h=12
 ppcont_evals12_diff=pmap(list(PPcontrol_dat$splits,PPcontrol_dat$evals_same, PPcontrol_dat$evals_switch ,PPcontrol_dat$id), get_evals12_diff)
@@ -392,7 +392,7 @@ ppb=rbind(ppb1,ppb6,ppb12)
 #exclosure###
 
 #combine predictions on same and switched models for exclosure data
-pp_preds_exclosure=left_join(preds_excl_same, preds_excl_switch, by=c("moon", "holdout", "m"))
+pp_preds_exclosure=left_join(PPpreds_excl_same, PPpreds_excl_switch, by=c("moon", "holdout", "m"))
 
 #calculate brier score for same models
 pp_brier_excl1=scoring(pred=pp_preds_exclosure$preds_same, response=pp_preds_exclosure$holdout,distr="nbinom", distrcoefs=2, individual=TRUE,
