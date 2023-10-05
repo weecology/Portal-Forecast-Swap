@@ -76,7 +76,7 @@ pbexcl_covs_dat=pbexcl_covs%>%filter(!newmoonnumber<278, !newmoonnumber>396)
 pbcont_covs_dat$abundance=round_na.interp(pbcont_covs_dat$abundance)
 pbexcl_covs_dat$abundance=round_na.interp(pbexcl_covs_dat$abundance)
 
-#create rolling origin object for analysis
+#rolling origin object for analysis####
 n_moons_yr=12
 n_yrs=5
 n_moons_train=n_moons_yr*n_yrs
@@ -199,14 +199,6 @@ o4=cbind(temp_cont, temp_excl)
 o5=cbind(cprec_cont, cprec_excl)
 o6=cbind(wprec_cont, wprec_excl)
 
-###directional shift####
-length(which(o1>0))/96
-length(which(o2>0))/96
-length(which(o3>0))/96
-length(which(o4>0))/96
-length(which(o5>0))/96
-length(which(o6>0))/96
-
 ##degree of overlap####
 overlap(o1, plot=T)
 overlap(o2, plot=T)
@@ -215,70 +207,120 @@ overlap(o4, plot=T)
 overlap(o5, plot=T)
 overlap(o6, plot=T)
 
-##multiple comparisons test####
+##directional shift####
 
-#calculate pvalue following: https://www.bmj.com/content/343/bmj.d2304 
+#get est and se for z score calculation
 
-PBcontrol_dat$pvalue=map(PBcontrol_dat$model, get_pvalue)
-PBexclosure_dat$pvalue=map(PBexclosure_dat$model, get_pvalue)
+PBcontrol_dat$coef=map(PBcontrol_dat$model, get_coef)
+PBexclosure_dat$coef=map(PBexclosure_dat$model, get_coef)
 
-#select pvalues for each parameter
+#select estimates for each parameter
 
-pbcont_int_pval=PBcontrol_dat$pvalue%>%map(unlist)%>%map_dbl(1)
-pbcont_b1_pval=PBcontrol_dat$pvalue%>%map(unlist)%>%map_dbl(2)
-pbcont_b12_pval=PBcontrol_dat$pvalue%>%map(unlist)%>%map_dbl(3)
-pbcont_temp_pval=PBcontrol_dat$pvalue%>%map(unlist)%>%map_dbl(4)
-pbcont_wprec_pval=PBcontrol_dat$pvalue%>%map(unlist)%>%map_dbl(5)
-pbcont_cprec_pval=PBcontrol_dat$pvalue%>%map(unlist)%>%map_dbl(6)
+pbcont_int_est=PBcontrol_dat$coef%>%map(unlist)%>%map_dbl(1)
+pbcont_b1_est=PBcontrol_dat$coef%>%map(unlist)%>%map_dbl(2)
+pbcont_b12_est=PBcontrol_dat$coef%>%map(unlist)%>%map_dbl(3)
+pbcont_temp_est=PBcontrol_dat$coef%>%map(unlist)%>%map_dbl(4)
+pbcont_wprec_est=PBcontrol_dat$coef%>%map(unlist)%>%map_dbl(5)
+pbcont_cprec_est=PBcontrol_dat$coef%>%map(unlist)%>%map_dbl(6)
 
-pbexcl_int_pval=PBexclosure_dat$pvalue%>%map(unlist)%>%map_dbl(1)
-pbexcl_b1_pval=PBexclosure_dat$pvalue%>%map(unlist)%>%map_dbl(2)
-pbexcl_b12_pval=PBexclosure_dat$pvalue%>%map(unlist)%>%map_dbl(3)
-pbexcl_temp_pval=PBexclosure_dat$pvalue%>%map(unlist)%>%map_dbl(4)
-pbexcl_wprec_pval=PBexclosure_dat$pvalue%>%map(unlist)%>%map_dbl(5)
-pbexcl_cprec_pval=PBexclosure_dat$pvalue%>%map(unlist)%>%map_dbl(6)
+pbexcl_int_est=PBexclosure_dat$coef%>%map(unlist)%>%map_dbl(1)
+pbexcl_b1_est=PBexclosure_dat$coef%>%map(unlist)%>%map_dbl(2)
+pbexcl_b12_est=PBexclosure_dat$coef%>%map(unlist)%>%map_dbl(3)
+pbexcl_temp_est=PBexclosure_dat$coef%>%map(unlist)%>%map_dbl(4)
+pbexcl_wprec_est=PBexclosure_dat$coef%>%map(unlist)%>%map_dbl(5)
+pbexcl_cprec_est=PBexclosure_dat$coef%>%map(unlist)%>%map_dbl(6)
+
+#select standard errors for each parameter
+pbcont_int_se=PBcontrol_dat$coef%>%map(unlist)%>%map_dbl(8)
+pbcont_b1_se=PBcontrol_dat$coef%>%map(unlist)%>%map_dbl(9)
+pbcont_b12_se=PBcontrol_dat$coef%>%map(unlist)%>%map_dbl(10)
+pbcont_temp_se=PBcontrol_dat$coef%>%map(unlist)%>%map_dbl(11)
+pbcont_wprec_se=PBcontrol_dat$coef%>%map(unlist)%>%map_dbl(12)
+pbcont_cprec_se=PBcontrol_dat$coef%>%map(unlist)%>%map_dbl(13)
+
+pbexcl_int_se=PBexclosure_dat$coef%>%map(unlist)%>%map_dbl(8)
+pbexcl_b1_se=PBexclosure_dat$coef%>%map(unlist)%>%map_dbl(9)
+pbexcl_b12_se=PBexclosure_dat$coef%>%map(unlist)%>%map_dbl(10)
+pbexcl_temp_se=PBexclosure_dat$coef%>%map(unlist)%>%map_dbl(11)
+pbexcl_wprec_se=PBexclosure_dat$coef%>%map(unlist)%>%map_dbl(12)
+pbexcl_cprec_se=PBexclosure_dat$coef%>%map(unlist)%>%map_dbl(13)
 
 #combine dataframes
 
-pbint_pval=cbind(pbcont_int_pval, pbexcl_int_pval)%>%as.data.frame%>%
-  rename("control"="pbcont_int_pval", "removal"="pbexcl_int_pval")%>%
-  pivot_longer(cols=c(1:2),names_to="treatment", values_to = "raw_pvalue")
+pbint_coef=cbind(pbcont_int_est, pbexcl_int_est, pbcont_int_se, pbexcl_int_se)%>%
+  as.data.frame%>%rename("B_c"="pbcont_int_est", "B_r"="pbexcl_int_est",
+                         "SE_c"="pbcont_int_se", "SE_r"="pbexcl_int_se")%>%
+  mutate(parameter="intercept", 
+         z_score=(B_c - B_r) / sqrt((SE_c + SE_r)^2),
+         pvalue= 2 * pnorm(z_score, lower.tail = FALSE),
+         adj_p=p.adjust(pvalue, method="fdr"),
+         B_shift= B_c - B_r,
+         significance=case_when(adj_p<0.05 & B_shift<0 ~ "SN", #SN==significant negative shift
+                                adj_p<0.05 & B_shift>0 ~ "SP", #SP==significant positive shift
+                                adj_p>0.05~ "NS")) #NS==not significant
 
-pbb1_pval=cbind(pbcont_b1_pval, pbexcl_b1_pval)%>%as.data.frame%>%
-  rename("control"="pbcont_b1_pval", "removal"="pbexcl_b1_pval")%>%
-  pivot_longer(cols=c(1:2),names_to="treatment", values_to = "raw_pvalue")
+pbb1_coef=cbind(pbcont_b1_est, pbexcl_b1_est, pbcont_b1_se, pbexcl_b1_se)%>%
+  as.data.frame%>%rename("B_c"="pbcont_b1_est", "B_r"="pbexcl_b1_est",
+                         "SE_c"="pbcont_b1_se", "SE_r"="pbexcl_b1_se")%>%
+  mutate(parameter="beta1", 
+         z_score=(B_c - B_r) / sqrt((SE_c + SE_r)^2),
+         pvalue=2 * pnorm(z_score, lower.tail = FALSE),
+         adj_p=p.adjust(pvalue, method="fdr"),
+         B_shift= B_c - B_r,
+         significance=case_when(adj_p<0.05 & B_shift<0 ~ "SN", #SN==significant negative shift
+                                adj_p<0.05 & B_shift>0 ~ "SP", #SP==significant positive shift
+                                adj_p>0.05~ "NS")) #NS==not significant
 
-pbb12_pval=cbind(pbcont_b12_pval, pbexcl_b12_pval)%>%as.data.frame%>%
-  rename("control"="pbcont_b12_pval", "removal"="pbexcl_b12_pval")%>%
-  pivot_longer(cols=c(1:2),names_to="treatment", values_to = "raw_pvalue")
+pbb12_coef=cbind(pbcont_b12_est, pbexcl_b12_est, pbcont_b12_se, pbexcl_b12_se)%>%
+  as.data.frame%>%rename("B_c"="pbcont_b12_est", "B_r"="pbexcl_b12_est",
+                         "SE_c"="pbcont_b12_se", "SE_r"="pbexcl_b12_se")%>%
+  mutate(parameter="beta12", 
+         z_score=(B_c - B_r) / sqrt((SE_c + SE_r)^2),
+         pvalue=2 * pnorm(z_score, lower.tail = FALSE),
+         adj_p=p.adjust(pvalue, method="fdr"),
+         B_shift= B_c - B_r,
+         significance=case_when(adj_p<0.05 & B_shift<0 ~ "SN", #SN==significant negative shift
+                                adj_p<0.05 & B_shift>0 ~ "SP", #SP==significant positive shift
+                                adj_p>0.05~ "NS")) #NS==not significant
 
-pbtemp_pval=cbind(pbcont_temp_pval, pbexcl_temp_pval)%>%as.data.frame%>%
-  rename("control"="pbcont_temp_pval", "removal"="pbexcl_temp_pval")%>%
-  pivot_longer(cols=c(1:2),names_to="treatment", values_to = "raw_pvalue")
+pbtemp_coef=cbind(pbcont_temp_est, pbexcl_temp_est, pbcont_temp_se, pbexcl_temp_se)%>%
+  as.data.frame%>%rename("B_c"="pbcont_temp_est", "B_r"="pbexcl_temp_est",
+                         "SE_c"="pbcont_temp_se", "SE_r"="pbexcl_temp_se")%>%
+  mutate(parameter="temp", 
+         z_score=(B_c - B_r) / sqrt((SE_c + SE_r)^2),
+         pvalue=2 * pnorm(z_score, lower.tail = FALSE),
+         adj_p=p.adjust(pvalue, method="fdr"),
+         B_shift= B_c - B_r,
+         significance=case_when(adj_p<0.05 & B_shift<0 ~ "SN", #SN==significant negative shift
+                                adj_p<0.05 & B_shift>0 ~ "SP", #SP==significant positive shift
+                                adj_p>0.05~ "NS")) #NS==not significant
 
-pbwarmprec_pval=cbind(pbcont_wprec_pval, pbexcl_wprec_pval)%>%as.data.frame%>%
-  rename("control"="pbcont_wprec_pval", "removal"="pbexcl_wprec_pval")%>%
-  pivot_longer(cols=c(1:2),names_to="treatment", values_to = "raw_pvalue")
+pbwprec_coef=cbind(pbcont_wprec_est, pbexcl_wprec_est, pbcont_wprec_se, pbexcl_wprec_se)%>%
+  as.data.frame%>%rename("B_c"="pbcont_wprec_est", "B_r"="pbexcl_wprec_est",
+                         "SE_c"="pbcont_wprec_se", "SE_r"="pbexcl_wprec_se")%>%
+  mutate(parameter="warm precip", 
+         z_score=(B_c - B_r) / sqrt((SE_c + SE_r)^2),
+         pvalue=2 * pnorm(z_score, lower.tail = FALSE),
+         adj_p=p.adjust(pvalue, method="fdr"),
+         B_shift= B_c - B_r,
+         significance=case_when(adj_p<0.05 & B_shift<0 ~ "SN", #SN==significant negative shift
+                                adj_p<0.05 & B_shift>0 ~ "SP", #SP==significant positive shift
+                                adj_p>0.05~ "NS")) #NS==not significant
 
-pbcoolprec_pval=cbind(pbcont_cprec_pval, pbexcl_cprec_pval)%>%as.data.frame%>%
-  rename("control"="pbcont_cprec_pval", "removal"="pbexcl_cprec_pval")%>%
-  pivot_longer(cols=c(1:2),names_to="treatment", values_to = "raw_pvalue")
+pbcprec_coef=cbind(pbcont_cprec_est, pbexcl_cprec_est, pbcont_cprec_se, pbexcl_cprec_se)%>%
+  as.data.frame%>%rename("B_c"="pbcont_cprec_est", "B_r"="pbexcl_cprec_est",
+                         "SE_c"="pbcont_cprec_se", "SE_r"="pbexcl_cprec_se")%>%
+  mutate(parameter="cool precip", 
+         z_score=(B_c - B_r) / sqrt((SE_c + SE_r)^2),
+         pvalue=2 * pnorm(z_score, lower.tail = FALSE),
+         adj_p=p.adjust(pvalue, method="fdr"),
+         B_shift= B_c - B_r,
+         significance=case_when(adj_p<0.05 & B_shift<0 ~ "SN", #SN==significant negative shift
+                                adj_p<0.05 & B_shift>0 ~ "SP", #SP==significant positive shift
+                                adj_p>0.05~ "NS")) #NS==not significant
 
-#pairwise t-test
-pairwise.t.test(pbint_pval$raw_pvalue, pbint_pval$treatment, p.adjust.method="fdr", pool.sd=FALSE, paired=TRUE) 
-pairwise.t.test(pbb1_pval$raw_pvalue, pbb1_pval$treatment, p.adjust.method="fdr", pool.sd=FALSE, paired=TRUE) 
-pairwise.t.test(pbb12_pval$raw_pvalue, pbb12_pval$treatment, p.adjust.method="fdr", pool.sd=FALSE, paired=TRUE) 
-pairwise.t.test(pbtemp_pval$raw_pvalue, pbtemp_pval$treatment, p.adjust.method="fdr", pool.sd=FALSE, paired=TRUE) 
-pairwise.t.test(pbwarmprec_pval$raw_pvalue, pbwarmprec_pval$treatment, p.adjust.method="fdr",pool.sd=FALSE, paired=TRUE) 
-pairwise.t.test(pbcoolprec_pval$raw_pvalue, pbcoolprec_pval$treatment, p.adjust.method="fdr", pool.sd=FALSE, paired=TRUE) 
-
-#add adjusted p-values (FDR)
-pbint_pval$FDR=p.adjust(pbint_pval$raw_pvalue, method="fdr")
-pbb1_pval$FDR=p.adjust(pbb1_pval$raw_pvalue, method="fdr")
-pbb12_pval$FDR=p.adjust(pbb12_pval$raw_pvalue, method="fdr")
-pbtemp_pval$FDR=p.adjust(pbtemp_pval$raw_pvalue, method="fdr")
-pbwarmprec_pval$FDR=p.adjust(pbwarmprec_pval$raw_pvalue, method="fdr")
-pbcoolprec_pval$FDR=p.adjust(pbcoolprec_pval$raw_pvalue, method="fdr")
+#combine dataframes
+pb_sig=rbind(pbint_coef, pbb1_coef, pbb12_coef, pbtemp_coef, pbwprec_coef, pbcprec_coef)
 
 #Evaluate model transferability####
 
