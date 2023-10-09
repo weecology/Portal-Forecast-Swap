@@ -192,12 +192,12 @@ pbcprec_excl=coef_df_PB%>%filter(treatment=="removal")%>%select(cool_precip)%>%r
 pbwprec_cont=coef_df_PB%>%filter(treatment=="control")%>%select(warm_precip)%>%rename("control"="warm_precip")
 pbwprec_excl=coef_df_PB%>%filter(treatment=="removal")%>%select(warm_precip)%>%rename("removal"="warm_precip")
 
-pb_o1=cbind(pbint_cont, int_excl)
-pb_o2=cbind(pbar1_cont, ar1_excl)
-pb_o3=cbind(pbar12_cont, ar12_excl)
-pb_o4=cbind(pbtemp_cont, temp_excl)
-pb_o5=cbind(pbcprec_cont, cprec_excl)
-pb_o6=cbind(pbwprec_cont, wprec_excl)
+pb_o1=cbind(pbint_cont, pbint_excl)
+pb_o2=cbind(pbar1_cont, pbar1_excl)
+pb_o3=cbind(pbar12_cont, pbar12_excl)
+pb_o4=cbind(pbtemp_cont, pbtemp_excl)
+pb_o5=cbind(pbcprec_cont, pbcprec_excl)
+pb_o6=cbind(pbwprec_cont, pbwprec_excl)
 
 ##degree of overlap####
 overlap(pb_o1, plot=T)
@@ -209,118 +209,26 @@ overlap(pb_o6, plot=T)
 
 ##directional shift####
 
-#get est and se for z score calculation
+length(which(pb_o1>0))/96
+length(which(pb_o2>0))/96
+length(which(pb_o3>0))/96
+length(which(pb_o4>0))/96
+length(which(pb_o5>0))/96
+length(which(pb_o6>0))/96
 
-PBcontrol_dat$coef=map(PBcontrol_dat$model, get_coef)
-PBexclosure_dat$coef=map(PBexclosure_dat$model, get_coef)
+pb_o1=pb_o1%>%mutate(B_diff=control-removal)
+pb_o2=pb_o2%>%mutate(B_diff=control-removal)
+pb_o3=pb_o3%>%mutate(B_diff=control-removal)
+pb_o4=pb_o4%>%mutate(B_diff=control-removal)
+pb_o5=pb_o5%>%mutate(B_diff=control-removal)
+pb_o6=pb_o6%>%mutate(B_diff=control-removal)
 
-#select estimates for each parameter
-
-pbcont_int_est=PBcontrol_dat$coef%>%map(unlist)%>%map_dbl(1)
-pbcont_b1_est=PBcontrol_dat$coef%>%map(unlist)%>%map_dbl(2)
-pbcont_b12_est=PBcontrol_dat$coef%>%map(unlist)%>%map_dbl(3)
-pbcont_temp_est=PBcontrol_dat$coef%>%map(unlist)%>%map_dbl(4)
-pbcont_wprec_est=PBcontrol_dat$coef%>%map(unlist)%>%map_dbl(5)
-pbcont_cprec_est=PBcontrol_dat$coef%>%map(unlist)%>%map_dbl(6)
-
-pbexcl_int_est=PBexclosure_dat$coef%>%map(unlist)%>%map_dbl(1)
-pbexcl_b1_est=PBexclosure_dat$coef%>%map(unlist)%>%map_dbl(2)
-pbexcl_b12_est=PBexclosure_dat$coef%>%map(unlist)%>%map_dbl(3)
-pbexcl_temp_est=PBexclosure_dat$coef%>%map(unlist)%>%map_dbl(4)
-pbexcl_wprec_est=PBexclosure_dat$coef%>%map(unlist)%>%map_dbl(5)
-pbexcl_cprec_est=PBexclosure_dat$coef%>%map(unlist)%>%map_dbl(6)
-
-#select standard errors for each parameter
-pbcont_int_se=PBcontrol_dat$coef%>%map(unlist)%>%map_dbl(8)
-pbcont_b1_se=PBcontrol_dat$coef%>%map(unlist)%>%map_dbl(9)
-pbcont_b12_se=PBcontrol_dat$coef%>%map(unlist)%>%map_dbl(10)
-pbcont_temp_se=PBcontrol_dat$coef%>%map(unlist)%>%map_dbl(11)
-pbcont_wprec_se=PBcontrol_dat$coef%>%map(unlist)%>%map_dbl(12)
-pbcont_cprec_se=PBcontrol_dat$coef%>%map(unlist)%>%map_dbl(13)
-
-pbexcl_int_se=PBexclosure_dat$coef%>%map(unlist)%>%map_dbl(8)
-pbexcl_b1_se=PBexclosure_dat$coef%>%map(unlist)%>%map_dbl(9)
-pbexcl_b12_se=PBexclosure_dat$coef%>%map(unlist)%>%map_dbl(10)
-pbexcl_temp_se=PBexclosure_dat$coef%>%map(unlist)%>%map_dbl(11)
-pbexcl_wprec_se=PBexclosure_dat$coef%>%map(unlist)%>%map_dbl(12)
-pbexcl_cprec_se=PBexclosure_dat$coef%>%map(unlist)%>%map_dbl(13)
-
-#combine dataframes
-
-pbint_coef=cbind(pbcont_int_est, pbexcl_int_est, pbcont_int_se, pbexcl_int_se)%>%
-  as.data.frame%>%rename("B_c"="pbcont_int_est", "B_r"="pbexcl_int_est",
-                         "SE_c"="pbcont_int_se", "SE_r"="pbexcl_int_se")%>%
-  mutate(parameter="intercept", 
-         z_score=abs((B_c - B_r) / sqrt((SE_c + SE_r)^2)),
-         pvalue=2 * pnorm(z_score, lower.tail = FALSE),
-         adj_p=p.adjust(pvalue, method="fdr"),
-         B_shift= B_c - B_r,
-         significance=case_when(adj_p<0.05 & B_shift<0 ~ "SN", #SN==significant negative shift
-                                adj_p<0.05 & B_shift>0 ~ "SP", #SP==significant positive shift
-                                adj_p>0.05~ "NS")) #NS==not significant
-
-pbb1_coef=cbind(pbcont_b1_est, pbexcl_b1_est, pbcont_b1_se, pbexcl_b1_se)%>%
-  as.data.frame%>%rename("B_c"="pbcont_b1_est", "B_r"="pbexcl_b1_est",
-                         "SE_c"="pbcont_b1_se", "SE_r"="pbexcl_b1_se")%>%
-  mutate(parameter="beta1", 
-         z_score=(B_c - B_r) / sqrt((SE_c + SE_r)^2),
-         pvalue=2 * pnorm(z_score, lower.tail = FALSE),
-         adj_p=p.adjust(pvalue, method="fdr"),
-         B_shift= B_c - B_r,
-         significance=case_when(adj_p<0.05 & B_shift<0 ~ "SN", #SN==significant negative shift
-                                adj_p<0.05 & B_shift>0 ~ "SP", #SP==significant positive shift
-                                adj_p>0.05~ "NS")) #NS==not significant
-
-pbb12_coef=cbind(pbcont_b12_est, pbexcl_b12_est, pbcont_b12_se, pbexcl_b12_se)%>%
-  as.data.frame%>%rename("B_c"="pbcont_b12_est", "B_r"="pbexcl_b12_est",
-                         "SE_c"="pbcont_b12_se", "SE_r"="pbexcl_b12_se")%>%
-  mutate(parameter="beta12", 
-         z_score=(B_c - B_r) / sqrt((SE_c + SE_r)^2),
-         pvalue=2 * pnorm(z_score, lower.tail = FALSE),
-         adj_p=p.adjust(pvalue, method="fdr"),
-         B_shift= B_c - B_r,
-         significance=case_when(adj_p<0.05 & B_shift<0 ~ "SN", #SN==significant negative shift
-                                adj_p<0.05 & B_shift>0 ~ "SP", #SP==significant positive shift
-                                adj_p>0.05~ "NS")) #NS==not significant
-
-pbtemp_coef=cbind(pbcont_temp_est, pbexcl_temp_est, pbcont_temp_se, pbexcl_temp_se)%>%
-  as.data.frame%>%rename("B_c"="pbcont_temp_est", "B_r"="pbexcl_temp_est",
-                         "SE_c"="pbcont_temp_se", "SE_r"="pbexcl_temp_se")%>%
-  mutate(parameter="temp", 
-         z_score=(B_c - B_r) / sqrt((SE_c + SE_r)^2),
-         pvalue=2 * pnorm(z_score, lower.tail = FALSE),
-         adj_p=p.adjust(pvalue, method="fdr"),
-         B_shift= B_c - B_r,
-         significance=case_when(adj_p<0.05 & B_shift<0 ~ "SN", #SN==significant negative shift
-                                adj_p<0.05 & B_shift>0 ~ "SP", #SP==significant positive shift
-                                adj_p>0.05~ "NS")) #NS==not significant
-
-pbwprec_coef=cbind(pbcont_wprec_est, pbexcl_wprec_est, pbcont_wprec_se, pbexcl_wprec_se)%>%
-  as.data.frame%>%rename("B_c"="pbcont_wprec_est", "B_r"="pbexcl_wprec_est",
-                         "SE_c"="pbcont_wprec_se", "SE_r"="pbexcl_wprec_se")%>%
-  mutate(parameter="warm precip", 
-         z_score=(B_c - B_r) / sqrt((SE_c + SE_r)^2),
-         pvalue=2 * pnorm(z_score, lower.tail = FALSE),
-         adj_p=p.adjust(pvalue, method="fdr"),
-         B_shift= B_c - B_r,
-         significance=case_when(adj_p<0.05 & B_shift<0 ~ "SN", #SN==significant negative shift
-                                adj_p<0.05 & B_shift>0 ~ "SP", #SP==significant positive shift
-                                adj_p>0.05~ "NS")) #NS==not significant
-
-pbcprec_coef=cbind(pbcont_cprec_est, pbexcl_cprec_est, pbcont_cprec_se, pbexcl_cprec_se)%>%
-  as.data.frame%>%rename("B_c"="pbcont_cprec_est", "B_r"="pbexcl_cprec_est",
-                         "SE_c"="pbcont_cprec_se", "SE_r"="pbexcl_cprec_se")%>%
-  mutate(parameter="cool precip", 
-         z_score=(B_c - B_r) / sqrt((SE_c + SE_r)^2),
-         pvalue=2 * pnorm(z_score, lower.tail = FALSE),
-         adj_p=p.adjust(pvalue, method="fdr"),
-         B_shift= B_c - B_r,
-         significance=case_when(adj_p<0.05 & B_shift<0 ~ "SN", #SN==significant negative shift
-                                adj_p<0.05 & B_shift>0 ~ "SP", #SP==significant positive shift
-                                adj_p>0.05~ "NS")) #NS==not significant
-
-#combine dataframes
-pb_sig=rbind(pbint_coef, pbb1_coef, pbb12_coef, pbtemp_coef, pbwprec_coef, pbcprec_coef)
+length(which(pb_o1$B_diff>0))/48
+length(which(pb_o2$B_diff>0))/48
+length(which(pb_o3$B_diff>0))/48
+length(which(pb_o4$B_diff>0))/48
+length(which(pb_o5$B_diff>0))/48
+length(which(pb_o6$B_diff>0))/48
 
 #Evaluate model transferability####
 
