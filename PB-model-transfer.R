@@ -174,38 +174,38 @@ pbb12=cbind(pbcontrol_b12_coefs, pbexclosure_b12_coefs)%>%as.data.frame%>%
 coef_df_PB=as.data.frame(list(pbints, pbb1, pbb12, pbtemps, pbwarmprec, pbcoolprec))%>%
   select(treatment, intercept, beta1, beta12, temp,cool_precip, warm_precip)
 
-int_cont=coef_df_PB%>%filter(treatment=="control")%>%select(intercept)%>%rename("control"="intercept")
-int_excl=coef_df_PB%>%filter(treatment=="removal")%>%select(intercept)%>%rename("removal"="intercept")
+pbint_cont=coef_df_PB%>%filter(treatment=="control")%>%select(intercept)%>%rename("control"="intercept")
+pbint_excl=coef_df_PB%>%filter(treatment=="removal")%>%select(intercept)%>%rename("removal"="intercept")
 
-ar1_cont=coef_df_PB%>%filter(treatment=="control")%>%select(beta1)%>%rename("control"="beta1")
-ar1_excl=coef_df_PB%>%filter(treatment=="removal")%>%select(beta1)%>%rename("removal"="beta1")
+pbar1_cont=coef_df_PB%>%filter(treatment=="control")%>%select(beta1)%>%rename("control"="beta1")
+pbar1_excl=coef_df_PB%>%filter(treatment=="removal")%>%select(beta1)%>%rename("removal"="beta1")
 
-ar12_cont=coef_df_PB%>%filter(treatment=="control")%>%select(beta12)%>%rename("control"="beta12")
-ar12_excl=coef_df_PB%>%filter(treatment=="removal")%>%select(beta12)%>%rename("removal"="beta12")
+pbar12_cont=coef_df_PB%>%filter(treatment=="control")%>%select(beta12)%>%rename("control"="beta12")
+pbar12_excl=coef_df_PB%>%filter(treatment=="removal")%>%select(beta12)%>%rename("removal"="beta12")
 
-temp_cont=coef_df_PB%>%filter(treatment=="control")%>%select(temp)%>%rename("control"="temp")
-temp_excl=coef_df_PB%>%filter(treatment=="removal")%>%select(temp)%>%rename("removal"="temp")
+pbtemp_cont=coef_df_PB%>%filter(treatment=="control")%>%select(temp)%>%rename("control"="temp")
+pbtemp_excl=coef_df_PB%>%filter(treatment=="removal")%>%select(temp)%>%rename("removal"="temp")
 
-cprec_cont=coef_df_PB%>%filter(treatment=="control")%>%select(cool_precip)%>%rename("control"="cool_precip")
-cprec_excl=coef_df_PB%>%filter(treatment=="removal")%>%select(cool_precip)%>%rename("removal"="cool_precip")
+pbcprec_cont=coef_df_PB%>%filter(treatment=="control")%>%select(cool_precip)%>%rename("control"="cool_precip")
+pbcprec_excl=coef_df_PB%>%filter(treatment=="removal")%>%select(cool_precip)%>%rename("removal"="cool_precip")
 
-wprec_cont=coef_df_PB%>%filter(treatment=="control")%>%select(warm_precip)%>%rename("control"="warm_precip")
-wprec_excl=coef_df_PB%>%filter(treatment=="removal")%>%select(warm_precip)%>%rename("removal"="warm_precip")
+pbwprec_cont=coef_df_PB%>%filter(treatment=="control")%>%select(warm_precip)%>%rename("control"="warm_precip")
+pbwprec_excl=coef_df_PB%>%filter(treatment=="removal")%>%select(warm_precip)%>%rename("removal"="warm_precip")
 
-o1=cbind(int_cont, int_excl)
-o2=cbind(ar1_cont, ar1_excl)
-o3=cbind(ar12_cont, ar12_excl)
-o4=cbind(temp_cont, temp_excl)
-o5=cbind(cprec_cont, cprec_excl)
-o6=cbind(wprec_cont, wprec_excl)
+pb_o1=cbind(pbint_cont, int_excl)
+pb_o2=cbind(pbar1_cont, ar1_excl)
+pb_o3=cbind(pbar12_cont, ar12_excl)
+pb_o4=cbind(pbtemp_cont, temp_excl)
+pb_o5=cbind(pbcprec_cont, cprec_excl)
+pb_o6=cbind(pbwprec_cont, wprec_excl)
 
 ##degree of overlap####
-overlap(o1, plot=T)
-overlap(o2, plot=T)
-overlap(o3, plot=T)
-overlap(o4, plot=T)
-overlap(o5, plot=T)
-overlap(o6, plot=T)
+overlap(pb_o1, plot=T)
+overlap(pb_o2, plot=T)
+overlap(pb_o3, plot=T)
+overlap(pb_o4, plot=T)
+overlap(pb_o5, plot=T)
+overlap(pb_o6, plot=T)
 
 ##directional shift####
 
@@ -251,8 +251,8 @@ pbint_coef=cbind(pbcont_int_est, pbexcl_int_est, pbcont_int_se, pbexcl_int_se)%>
   as.data.frame%>%rename("B_c"="pbcont_int_est", "B_r"="pbexcl_int_est",
                          "SE_c"="pbcont_int_se", "SE_r"="pbexcl_int_se")%>%
   mutate(parameter="intercept", 
-         z_score=(B_c - B_r) / sqrt((SE_c + SE_r)^2),
-         pvalue= 2 * pnorm(z_score, lower.tail = FALSE),
+         z_score=abs((B_c - B_r) / sqrt((SE_c + SE_r)^2)),
+         pvalue=2 * pnorm(z_score, lower.tail = FALSE),
          adj_p=p.adjust(pvalue, method="fdr"),
          B_shift= B_c - B_r,
          significance=case_when(adj_p<0.05 & B_shift<0 ~ "SN", #SN==significant negative shift
@@ -424,12 +424,12 @@ pb_brier_control=left_join(pb_brier_cont_same, pb_brier_cont_switch)%>%mutate(tr
 pb_brier_control1=pb_brier_control%>%group_by(m)%>%slice(which(row_number()%in%c(1,6,12)))
 
 #subdivide into each horizon for easier plotting
-pbh1=pb_brier_control1%>%group_by(m)%>%slice_head(n=1)
+pbh1=pb_brier_control1%>%group_by(m)%>%slice_head(n=1)%>%mutate(horizon="1")
 pbh6=pb_brier_control1%>%group_by(m)%>%slice(which(row_number()==2))%>%mutate(horizon="6")
 pbh12=pb_brier_control1%>%group_by(m)%>%slice(which(row_number()==3))%>%mutate(horizon="12")
 
 #combine all 3 horizons
-pbh=rbind(pbh1,pbh6,pbh12)
+pbc=rbind(pbh1,pbh6,pbh12)
 
 #exclosure###
 
@@ -465,6 +465,6 @@ pbbx12=pb_brier_exclosure1%>%group_by(m)%>%slice(which(row_number()==3))%>%mutat
 pbbx=rbind(pbbx1,pbbx6, pbbx12)
 
 #combine control and exclosure and filter out per horizon for plotting
-pb_briers1=rbind(pbb,pbbx)%>%filter(horizon==1)
-pb_briers6=rbind(pbb,pbbx)%>%filter(horizon==6)
-pb_briers12=rbind(pbb,pbbx)%>%filter(horizon==12)
+pb_briers1=rbind(pbc,pbbx)%>%filter(horizon==1)
+pb_briers6=rbind(pbc,pbbx)%>%filter(horizon==6)
+pb_briers12=rbind(pbc,pbbx)%>%filter(horizon==12)

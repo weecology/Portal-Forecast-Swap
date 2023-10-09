@@ -5,7 +5,7 @@ rolling_mod=function(split) {
   
   analysis_set= analysis(split) #get dataframe
   
-  fit_model= tsglm(analysis_set[,"abundance"], model = list(past_obs=c(1,12), external=TRUE), 
+  fit_model= tsglm(analysis_set[,"abundance"], model = list(past_obs=c(1,12)), 
                    distr = "nbinom", 
                    xreg  = analysis_set[,3:5], 
                    link  = "log")
@@ -122,17 +122,12 @@ get_evals12_diff=function(split, evals_same, evals_switch, id) {
   hp=cbind(newmoon,id, h, score_same, score_switch, score_diff)
 }
 
-get_pvalue=function(model) {
+get_coef=function(model) {
   
   coef_est=tscount::se(model)$est
-  coef_ci_u=tscount::se(model)$ci[,"upper"]
-  coef_ci_l=tscount::se(model)$ci[,"lower"]
+  coef_se=tscount::se(model)$se
   
-  coef_se= (coef_ci_u - coef_ci_l)/ (2*1.96)
-  
-  coef_z=coef_est/coef_se
-  
-  coef_P = list(round(exp(-0.717 * coef_z - 0.416* ((coef_z)^2)), digits=4))
+  coef_es =list(coef_est, coef_se)
   
 }
 
