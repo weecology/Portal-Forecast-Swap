@@ -52,6 +52,7 @@ z3=ggplot(coef_df_PB, aes(x=intercept, y=cool_precip, col=treatment))+geom_point
 ggarrange(z1,z2,z3, common.legend = T, nrow=3, legend="bottom")
 
 #covariate correlation####
+
 get_temp_warmppt_corr=function(split, model){
   
   analysis_set=analysis(split)
@@ -82,6 +83,13 @@ get_warmppt_coolppt_corr=function(split, model){
 }
 
 #PP
+#all data
+
+cor.test(ppcont_covs_dat$meantemp_lag1, ppcont_covs_dat$warm_precip)
+cor.test(ppcont_covs_dat$meantemp_lag1, ppcont_covs_dat$cool_precip)
+cor.test(ppcont_covs_dat$warm_precip, ppcont_covs_dat$cool_precip)
+
+#at multiple origins
 sh1=map(PPcontrol_dat$splits, get_temp_warmppt_corr)
 sh2=map(PPcontrol_dat$splits, get_temp_coolppt_corr)
 sh3=map(PPcontrol_dat$splits, get_warmppt_coolppt_corr)
@@ -98,6 +106,12 @@ hist(sh33, main="warm-cool precipitation", xlab="")
 mtext(expression(italic("C. penicillatus")), side = 3, line = -1.5, outer = TRUE, font=12)
 
 #PB
+#all data
+
+cor.test(pbcont_covs_dat$meantemp_lag1, pbcont_covs_dat$warm_precip)
+cor.test(pbcont_covs_dat$meantemp_lag1, pbcont_covs_dat$cool_precip)
+cor.test(pbcont_covs_dat$warm_precip, pbcont_covs_dat$cool_precip)
+
 zh1=map(PBcontrol_dat$splits, get_temp_warmppt_corr)
 zh2=map(PBcontrol_dat$splits, get_temp_coolppt_corr)
 zh3=map(PBcontrol_dat$splits, get_warmppt_coolppt_corr)
@@ -285,3 +299,73 @@ hist(meantemp_wprecipd2$meantemp_lag1, main =NULL, xlab="", ylab="removal")
 hist(meantemp_cprecipd2$meantemp_lag1, main=NULL, xlab="correlation", ylab = "")
 hist(cprecip_wprecipd2$cool_precip, main=NULL, xlab="", ylab="")
 mtext(expression(italic("C. baileyi")), side = 3, line = -1.5, outer = TRUE, font=12)
+
+#models with scaled covariates####
+s_covar=covars%>%mutate(meantemps=scale(meantemp_lag1, center = T, scale = T)[, 1],
+                        wprecs=scale(warm_precip, center = T, scale = T)[, 1],
+                        cprecs=scale(cool_precip, center = T, scale = T)[, 1])
+
+#PP scaled data
+ppcont_covs=right_join(s_covar, ppcont_dat)%>%
+  select(newmoonnumber, meantemps,
+         wprecs, cprecs, PP)%>%rename("abundance"="PP")
+
+ppexcl_covs=right_join(s_covar, ppexcl_dat)%>%
+  select(newmoonnumber, meantemps,
+         wprecs, cprecs, PP)%>%rename("abundance"="PP")
+
+#select data from Sept 2010- Dec 2019
+ppcont_covs_dat=ppcont_covs%>% filter(!newmoonnumber<411, !newmoonnumber>526)
+ppexcl_covs_dat=ppexcl_covs%>% filter(!newmoonnumber<411, !newmoonnumber>526)
+
+#interpolate missing data
+ppcont_covs_dat$abundance=round_na.interp(ppcont_covs_dat$abundance)
+ppexcl_covs_dat$abundance=round_na.interp(ppexcl_covs_dat$abundance)
+
+#PB scaled data
+pbcont_covs=right_join(s_covar, pbcont_dat)%>%
+  select(newmoonnumber, meantemps,
+         wprecs, cprecs, PB)%>%rename("abundance"="PB")
+
+pbexcl_covs=right_join(s_covar, pbexcl_dat)%>%
+  select(newmoonnumber, meantemps,
+         wprecs, cprecs, PB)%>%rename("abundance"="PB")
+
+#select data from Dec 1999- June 2009
+pbcont_covs_dat=pbcont_covs%>%filter(!newmoonnumber<278, !newmoonnumber>396)
+pbexcl_covs_dat=pbexcl_covs%>%filter(!newmoonnumber<278, !newmoonnumber>396)
+
+#interpolate missing data
+pbcont_covs_dat$abundance=round_na.interp(pbcont_covs_dat$abundance)
+pbexcl_covs_dat$abundance=round_na.interp(pbexcl_covs_dat$abundance)
+
+rolling_mod=function(split) {
+  
+  analysis_set= analysis(split) #get dataframe
+  
+  fit_model= tsglm(analysis_set[,"abundance"], model = list(past_obs=c(1,12)), 
+                   distr = "nbinom", 
+                   xreg  = analysis_set[,2:4], 
+                   link  = "log")
+}
+
+get_preds=function(split, model,y_source) {
+  
+  analysis_set= analysis(split) #get training data
+  assessment_set=assessment(split) #get testing data
+  model$ts = y_source$ts #select the initial condition from matching model
+  model$response = y_source$response
+  preds=predict(model, n.ahead=12, newxreg= assessment_set[,2:4])$pred
+}
+
+#model with AR(13)####
+
+rolling_mod=function(split) {
+  
+  analysis_set= analysis(split) #get dataframe
+  
+  fit_model= tsglm(analysis_set[,"abundance"], model = list(past_obs=c(1,13)), 
+                   distr = "nbinom", 
+                   xreg  = analysis_set[,3:5], 
+                   link  = "log")
+}

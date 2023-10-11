@@ -209,13 +209,6 @@ overlap(pb_o6, plot=T)
 
 ##directional shift####
 
-length(which(pb_o1>0))/96
-length(which(pb_o2>0))/96
-length(which(pb_o3>0))/96
-length(which(pb_o4>0))/96
-length(which(pb_o5>0))/96
-length(which(pb_o6>0))/96
-
 pb_o1=pb_o1%>%mutate(B_diff=control-removal)
 pb_o2=pb_o2%>%mutate(B_diff=control-removal)
 pb_o3=pb_o3%>%mutate(B_diff=control-removal)
@@ -376,3 +369,4 @@ pbbx=rbind(pbbx1,pbbx6, pbbx12)
 pb_briers1=rbind(pbc,pbbx)%>%filter(horizon==1)
 pb_briers6=rbind(pbc,pbbx)%>%filter(horizon==6)
 pb_briers12=rbind(pbc,pbbx)%>%filter(horizon==12)
+
