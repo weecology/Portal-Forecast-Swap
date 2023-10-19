@@ -185,9 +185,10 @@ pp_h12=ggdensity(ppevals12, x="score_diff", color="plot",fill="plot", size=1,
   theme(axis.text.y = element_blank())
 
 pph=ggarrange(pp_h1,pp_h6,pp_h12, common.legend = T, nrow=3, legend="bottom")
-annotate_figure(pph,left = text_grob("C. penicillatus", face = "italic", size = 16, rot=90))
+annotate_figure(pph, top = text_grob("C. penicillatus", face = "italic", size = 16), 
+                left= text_grob("RMSE", size=16, rot=90))
 
-##Fig. 5: Brier scores####
+#Brier scores###
 
 ppbr1=ggdensity(pp_briers1, x="brier_diff", color="treatment",fill="treatment", 
                 palette=c("#69b3a2", "grey"),ylab=F, rug=T, add="median",xlab=F, size=1,
@@ -211,7 +212,8 @@ ppbr3=ggdensity(pp_briers12, x="brier_diff", color="treatment",fill="treatment",
   scale_y_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))
 
 ppbh=ggarrange(ppbr1,ppbr2,ppbr3, common.legend = T, nrow=3, legend="bottom")
-annotate_figure(ppbh,left = text_grob("C. penicillatus", face = "italic", size = 16, rot=90))
+annotate_figure(ppbh, top = text_grob("C. penicillatus", face = "italic", size = 16), 
+                left= text_grob("Brier score", size=16, rot=90))
 
 #PB results####
 
@@ -314,9 +316,10 @@ pb_h12=ggdensity(pbevals12, x="score_diff", color="plot",fill="plot", size=1,yla
   scale_y_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))
 
 pbhh=ggarrange(pb_h1,pb_h6,pb_h12, common.legend = T, nrow=3, legend="bottom")
-annotate_figure(pbhh,left = text_grob("C. baileyi", face = "italic", size = 16, rot=90))
+annotate_figure(pbhh, top = text_grob("C. baileyi", face = "italic", size = 16), 
+                left= text_grob("RMSE", size=16, rot=90))
 
-##Fig. 5: Brier scores####
+#Brier scores###
 
 pbbr1=ggdensity(pb_briers1, x="brier_diff", color="treatment",fill="treatment", 
                 palette=c("#69b3a2", "grey"), rug=T,ylab=F, add="median",xlab=F, size=1,
@@ -337,4 +340,5 @@ pbbr3=ggdensity(pb_briers12, x="brier_diff", color="treatment",fill="treatment",
   scale_y_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))+theme(axis.text.y = element_blank())
 
 pbbh=ggarrange(pbbr1,pbbr2,pbbr3, common.legend = T, nrow=3, legend="bottom")
-annotate_figure(pbbh,left = text_grob("C. baileyi", face = "italic", size = 16, rot=90))
+annotate_figure(pbbh, top = text_grob("C. baileyi", face = "italic", size = 16), 
+                left= text_grob("Brier score", size=16, rot=90))
