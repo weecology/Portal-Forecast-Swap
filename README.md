@@ -1,5 +1,7 @@
 # Portal-Forecast-Swap
-repo for the manuscript:  Transferability of ecological forecasting models to novel biotic conditions in a long-term experimental study
+[![DOI](https://zenodo.org/badge/596188870.svg)](https://zenodo.org/doi/10.5281/zenodo.10050034)
+
+repo for the analyses scripts used in the manuscript titled: Transferability of ecological forecasting models to novel biotic conditions in a long-term experimental study
 
 ## **Files:**
 
