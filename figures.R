@@ -78,7 +78,7 @@ pp11=ggplot(spdat1)+ geom_line(mapping=aes(x=newmoonnumber, y=abundance, col=spe
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"))+
-  facet_wrap(~trt, nrow=2)+
+  facet_wrap(~trt, nrow=2)+ scale_color_viridis(discrete=TRUE)+
   xlab("")+
   geom_bracket(
     xmin = 280 , xmax = 396, y.position = 60,
@@ -93,34 +93,34 @@ pp11=ggplot(spdat1)+ geom_line(mapping=aes(x=newmoonnumber, y=abundance, col=spe
 
 ##Fig. 2: coefficient overlap####
 int_ov=ggdensity(coef_df_PP, x="intercept", color="treatment",fill="treatment", 
-                 palette=c("#69b3a2", "grey"), rug=T, ylab=F, add="median",xlab=F, size=1
+                 palette=c("#9900cc", "#FFcc00"), rug=T, ylab=F, add="median",xlab=F, size=1
 )+geom_vline(xintercept=0)+
   scale_x_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))+  
   theme(aspect.ratio=1,axis.text.x = element_text(angle=90), axis.text.y = element_blank())
 
 ar1_ov=ggdensity(coef_df_PP, x="beta1", color="treatment",fill="treatment", 
-                 palette=c("#69b3a2", "grey"), rug=T, add="median",xlab=F, size=1, ylab=F
+                 palette=c("#9900cc", "#FFcc00"), rug=T, add="median",xlab=F, size=1, ylab=F
 )+geom_vline(xintercept=0)+scale_x_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))+ 
   theme(aspect.ratio=1,axis.text.x = element_text(angle=90), axis.text.y = element_blank())
 
 ar12_ov=ggdensity(coef_df_PP, x="beta12", color="treatment",fill="treatment",
-                  palette=c("#69b3a2", "grey"), rug=T, add="median",xlab=F, size=1, ylab=F
+                  palette=c("#9900cc", "#FFcc00"), rug=T, add="median",xlab=F, size=1, ylab=F
 )+geom_vline(xintercept=0)+scale_x_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))+  
   theme(aspect.ratio=1,axis.text.x = element_text(angle=90), axis.text.y = element_blank())
 
 temp_ov=ggdensity(coef_df_PP, x="temp", color="treatment",fill="treatment", 
-                  palette=c("#69b3a2", "grey"), rug=T, add="median",xlab=F, size=1, ylab=F
+                  palette=c("#9900cc", "#FFcc00"), rug=T, add="median",xlab=F, size=1, ylab=F
 )+geom_vline(xintercept=0)+scale_x_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))+
   theme(aspect.ratio=1,axis.text.x = element_text(angle=90), axis.text.y = element_blank())
 
 wprec_ov=ggdensity(coef_df_PP, x="warm_precip", color="treatment",fill="treatment", 
-                   palette=c("#69b3a2", "grey"), rug=T, add="median",xlab=F, size=1, ylab=F
+                   palette=c("#9900cc", "#FFcc00"), rug=T, add="median",xlab=F, size=1, ylab=F
 )+geom_vline(xintercept=0)+scale_x_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))+
   scale_y_continuous(n.breaks=3)+
   theme(aspect.ratio=1,axis.text.x = element_text(angle=90), axis.text.y = element_blank())
 
 cprec_ov=ggdensity(coef_df_PP, x="cool_precip", color="treatment",fill="treatment", 
-                   palette=c("#69b3a2", "grey"), rug=T, add="median",xlab=F, size=1, ylab=F
+                   palette=c("#9900cc", "#FFcc00"), rug=T, add="median",xlab=F, size=1, ylab=F
 )+geom_vline(xintercept=0)+scale_x_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))+  
   theme(aspect.ratio=1,axis.text.x = element_text(angle=90), axis.text.y = element_blank())
 
@@ -165,7 +165,7 @@ annotate_figure(pp_predsplot,left = text_grob("C. penicillatus", face = "italic"
 
 ##Fig. 4: RMSE####
 pp_h1=ggdensity(ppevals1, x="score_diff", color="plot",fill="plot", 
-                palette=c("#69b3a2", "grey"), ylab=F,rug=T, add="median",xlab=F, size=1,
+                palette=c("#9900cc", "#FFcc00"), ylab=F,rug=T, add="median",xlab=F, size=1,
                 main="h=1")+geom_vline(xintercept=0)+xlim(-25, 25)+
   annotate("text", x=-15, y=0.40, label="non-transferred better fit")+
   annotate("text", x=13, y=0.40, label="transferred better fit")+
@@ -173,13 +173,13 @@ pp_h1=ggdensity(ppevals1, x="score_diff", color="plot",fill="plot",
   theme(axis.text.y = element_blank())
 
 pp_h6=ggdensity(ppevals6, x="score_diff", color="plot",fill="plot", 
-                palette=c("#69b3a2", "grey"), rug=T,ylab=F, add="median", xlab=F,size=1,
+                palette=c("#9900cc", "#FFcc00"), rug=T,ylab=F, add="median", xlab=F,size=1,
                 main="h=6")+geom_vline(xintercept=0)+xlim(-25, 25)+
   scale_y_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))+
   theme(axis.text.y = element_blank())
 
 pp_h12=ggdensity(ppevals12, x="score_diff", color="plot",fill="plot", size=1,
-                 palette=c("#69b3a2", "grey"),ylab=F, rug=T, add="median", xlab="RMSE difference (non-transferred - transferred)",
+                 palette=c("#9900cc", "#FFcc00"),ylab=F, rug=T, add="median", xlab="RMSE difference (non-transferred - transferred)",
                  main="h=12")+geom_vline(xintercept=0)+xlim(-25, 25)+
   scale_y_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))+
   theme(axis.text.y = element_blank())
@@ -189,9 +189,8 @@ annotate_figure(pph, top = text_grob("C. penicillatus", face = "italic", size = 
                 left= text_grob("RMSE", size=16, rot=90))
 
 #Brier scores###
-
 ppbr1=ggdensity(pp_briers1, x="brier_diff", color="treatment",fill="treatment", 
-                palette=c("#69b3a2", "grey"),ylab=F, rug=T, add="median",xlab=F, size=1,
+                palette=c("#9900cc", "#FFcc00"),ylab=F, rug=T, add="median",xlab=F, size=1,
                 main="h=1")+geom_vline(xintercept=0)+xlim(-0.20, .20)+
   annotate("text", x=-.12, y=70, label="non-transferred better fit")+
   annotate("text", x=0.10, y=70, label="transferred better fit")+
@@ -199,13 +198,13 @@ ppbr1=ggdensity(pp_briers1, x="brier_diff", color="treatment",fill="treatment",
   theme(axis.text.y = element_blank())
 
 ppbr2=ggdensity(pp_briers6, x="brier_diff", color="treatment",fill="treatment", 
-                palette=c("#69b3a2", "grey"), ylab=F, rug=T, add="median",xlab=F, size=1,
+                palette=c("#9900cc", "#FFcc00"), ylab=F, rug=T, add="median",xlab=F, size=1,
                 main="h=6")+geom_vline(xintercept=0)+xlim(-0.20, .20)+
   theme(axis.text.y = element_blank())+
   scale_y_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))
 
 ppbr3=ggdensity(pp_briers12, x="brier_diff", color="treatment",fill="treatment", 
-                palette=c("#69b3a2", "grey"),ylab=F, rug=T, add="median", size=1,
+                palette=c("#9900cc", "#FFcc00"),ylab=F, rug=T, add="median", size=1,
                 main="h=12", xlab="Brier score difference (non-transferred - transferred)")+
   geom_vline(xintercept=0)+xlim(-0.2, 0.2)+
   theme(axis.text.y = element_blank())+
@@ -219,38 +218,38 @@ annotate_figure(ppbh, top = text_grob("C. penicillatus", face = "italic", size =
 
 ##Fig. 2: coefficient overlap####
 pbint_ov=ggdensity(coef_df_PB, x="intercept", color="treatment",fill="treatment", 
-                   palette=c("#69b3a2", "grey"), rug=T, add="median",xlab="intercept", size=1
+                   palette=c("#9900cc", "#FFcc00"), rug=T, add="median",xlab="intercept", size=1
 )+geom_vline(xintercept=0)+ylab("")+
   scale_x_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))+
   theme(aspect.ratio = 1,axis.text.x = element_text(angle=90), axis.text.y = element_blank())
 
 pbar1_ov=ggdensity(coef_df_PB, x="beta1", color="treatment",fill="treatment", 
-                   palette=c("#69b3a2", "grey"), rug=T, add="median",xlab="AR (1)", size=1, ylab=F
+                   palette=c("#9900cc", "#FFcc00"), rug=T, add="median",xlab="AR (1)", size=1, ylab=F
 )+geom_vline(xintercept=0)+
   scale_x_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))+
   theme(aspect.ratio = 1, axis.text.x = element_text(angle=90), axis.text.y = element_blank())
 
 pbar12_ov=ggdensity(coef_df_PB, x="beta12", color="treatment",fill="treatment",
-                    palette=c("#69b3a2", "grey"), rug=T, add="median",xlab=" AR (12)", size=1, ylab=F
+                    palette=c("#9900cc", "#FFcc00"), rug=T, add="median",xlab=" AR (12)", size=1, ylab=F
 )+geom_vline(xintercept=0)+
   scale_x_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))+
   theme(aspect.ratio = 1, axis.text.x = element_text(angle=90), axis.text.y = element_blank())
 
 pbtemp_ov=ggdensity(coef_df_PB, x="temp", color="treatment",fill="treatment", 
-                    palette=c("#69b3a2", "grey"), rug=T, add="median",xlab="mean temperature (lag=1)", size=1, ylab=F
+                    palette=c("#9900cc", "#FFcc00"), rug=T, add="median",xlab="mean temperature (lag=1)", size=1, ylab=F
 )+geom_vline(xintercept=0)+
   scale_x_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))+
   theme(aspect.ratio = 1,axis.text.x = element_text(angle=90), axis.text.y = element_blank())
 
 pbwprec_ov=ggdensity(coef_df_PB, x="warm_precip", color="treatment",fill="treatment", 
-                     palette=c("#69b3a2", "grey"), rug=T, add="median",xlab="warm precipitation", size=1, ylab=F
+                     palette=c("#9900cc", "#FFcc00"), rug=T, add="median",xlab="warm precipitation", size=1, ylab=F
 )+geom_vline(xintercept=0)+
   scale_y_continuous(n.breaks=3)+
   scale_x_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))+
   theme(aspect.ratio = 1,axis.text.x = element_text(angle=90), axis.text.y = element_blank())
 
 pbcprec_ov=ggdensity(coef_df_PB, x="cool_precip", color="treatment",fill="treatment", 
-                     palette=c("#69b3a2", "grey"), rug=T, add="median",xlab="cool precipitation", size=1, ylab=F
+                     palette=c("#9900cc", "#FFcc00"), rug=T, add="median",xlab="cool precipitation", size=1, ylab=F
 )+geom_vline(xintercept=0)+
   scale_x_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))+
   theme(aspect.ratio = 1, axis.text.x = element_text(angle=90), axis.text.y = element_blank())
@@ -295,22 +294,21 @@ pb_predsplot=ggarrange(pbpreds_plot1, pbpreds_plot2, common.legend = T, ncol=1, 
 annotate_figure(pb_predsplot,left = text_grob("C. baileyi", face = "italic", size = 16, rot=90))
 
 ##Fig. 4: RMSE####
-pb_h1=ggdensity(pbevals1, x="score_diff", color="plot",fill="plot", 
-                palette=c("#69b3a2", "grey"), rug=T, ylab=F,add="median",xlab=F, size=1,
+pb_h1=ggdensity(pbevals1, x="score_diff", fill="plot", color="plot",
+                palette=c("#9900cc", "#FFcc00"), rug=T, ylab=F,add="median",xlab=F, size=1,
                 main="h=1")+geom_vline(xintercept=0)+xlim(-45, 45)+
   annotate("text", x=-28, y=0.12, label="non-transferred better fit")+
   annotate("text", x=26, y=0.12, label="transferred better fit")+
   scale_y_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))+
   theme(axis.text.y = element_blank())
 
-pb_h6=ggdensity(pbevals6, x="score_diff", color="plot",fill="plot", 
-                palette=c("#69b3a2", "grey"), rug=T, ylab=F, add="median", xlab=F,size=1,
-                main="h=6")+geom_vline(xintercept=0)+xlim(-45, 45)+
+pb_h6=ggdensity(pbevals6, x="score_diff", fill="plot", color="plot",
+                palette=c("#9900cc", "#FFcc00"), rug=T, ylab=F,add="median",xlab=F, size=1,                main="h=6")+geom_vline(xintercept=0)+xlim(-45, 45)+
   scale_y_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))+
   theme(axis.text.y = element_blank())
 
 pb_h12=ggdensity(pbevals12, x="score_diff", color="plot",fill="plot", size=1,ylab=F,
-                 palette=c("#69b3a2", "grey"), rug=T, add="median", xlab="RMSE difference (non-transferred - transferred)",
+                 palette=c("#9900cc", "#FFcc00"), rug=T, add="median", xlab="RMSE difference (non-transferred - transferred)",
                  main="h=12")+geom_vline(xintercept=0)+xlim(-45, 45)+
   theme(axis.text.y = element_blank())+
   scale_y_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))
@@ -322,19 +320,19 @@ annotate_figure(pbhh, top = text_grob("C. baileyi", face = "italic", size = 16),
 #Brier scores###
 
 pbbr1=ggdensity(pb_briers1, x="brier_diff", color="treatment",fill="treatment", 
-                palette=c("#69b3a2", "grey"), rug=T,ylab=F, add="median",xlab=F, size=1,
+                palette=c("#9900cc", "#FFcc00"), rug=T,ylab=F, add="median",xlab=F, size=1,
                 main="h=1")+geom_vline(xintercept=0)+xlim(-0.4, 0.4)+
   annotate("text", x=-0.25, y=13, label="non-transferred better fit")+
   annotate("text", x=.25, y=13, label="transferred better fit")+
   scale_y_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))+theme(axis.text.y = element_blank())
 
 pbbr2=ggdensity(pb_briers6, x="brier_diff", color="treatment",fill="treatment", 
-                palette=c("#69b3a2", "grey"), rug=T, add="median",xlab=F,ylab=F, size=1,
+                palette=c("#9900cc", "#FFcc00"), rug=T, add="median",xlab=F,ylab=F, size=1,
                 main="h=6")+geom_vline(xintercept=0)+xlim(-0.4, 0.4)+
   scale_y_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))+theme(axis.text.y = element_blank())
 
 pbbr3=ggdensity(pb_briers12, x="brier_diff", color="treatment",fill="treatment", 
-                palette=c("#69b3a2", "grey"), rug=T,ylab=F, add="median", size=1,
+                palette=c("#9900cc", "#FFcc00"), rug=T,ylab=F, add="median", size=1,
                 main="h=12", xlab="Brier score difference (non-transferred - transferred)")+
   geom_vline(xintercept=0)+xlim(-0.4, 0.4)+
   scale_y_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))+theme(axis.text.y = element_blank())

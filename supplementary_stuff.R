@@ -18,17 +18,17 @@ length(ppm_na$newmoonnumber)/length(ppm$newmoonnumber)*100
 
 c1=ggplot(coef_df_PP, aes(x=intercept, y=temp, col=treatment))+geom_point()+theme_classic()+
   geom_smooth(method="lm")+ylab("mean temp (lag=1)")+xlab("")+
-  ggtitle(expression(italic("C. penicillatus")))+scale_color_manual(values=c(control="#69b3a2", removal="grey"))+
+  ggtitle(expression(italic("C. penicillatus")))+scale_color_manual(values=c(control="#9900cc", removal="#FFcc00"))+
   scale_y_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))
 
 c2=ggplot(coef_df_PP, aes(x=intercept, y=warm_precip, col=treatment))+geom_point()+theme_classic()+
   geom_smooth(method="lm")+ylab("warm precipitation")+
-  scale_color_manual(values=c(control="#69b3a2", removal="grey"))+xlab("")+
+  scale_color_manual(values=c(control="#9900cc", removal="#FFcc00"))+xlab("")+
   scale_y_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))
 
 c3=ggplot(coef_df_PP, aes(x=intercept, y=cool_precip, col=treatment))+geom_point()+theme_classic()+
   geom_smooth(method="lm")+ylab("cool precipitation")+
-  scale_color_manual(values=c(control="#69b3a2", removal="grey"))+
+  scale_color_manual(values=c(control="#9900cc", removal="#FFcc00"))+
   scale_y_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))
 
 ggarrange(c1,c2,c3, common.legend = T, nrow=3, legend="bottom")
@@ -36,17 +36,17 @@ ggarrange(c1,c2,c3, common.legend = T, nrow=3, legend="bottom")
 #PB
 z1=ggplot(coef_df_PB, aes(x=intercept, y=temp, col=treatment))+geom_point()+theme_classic()+
   geom_smooth(method="lm")+ylab("mean temp (lag=1)")+xlab("")+
-  ggtitle(expression(italic("C. baileyi")))+scale_color_manual(values=c(control="#69b3a2", removal="grey"))+
+  ggtitle(expression(italic("C. baileyi")))+scale_color_manual(values=c(control="#9900cc", removal="#FFcc00"))+
   scale_y_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))
 
 z2=ggplot(coef_df_PB, aes(x=intercept, y=warm_precip, col=treatment))+geom_point()+theme_classic()+
   geom_smooth(method="lm")+ylab("warm precipitation")+
-  scale_color_manual(values=c(control="#69b3a2", removal="grey"))+xlab("")+
+  scale_color_manual(values=c(control="#9900cc", removal="#FFcc00"))+xlab("")+
   scale_y_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))
 
 z3=ggplot(coef_df_PB, aes(x=intercept, y=cool_precip, col=treatment))+geom_point()+theme_classic()+
   geom_smooth(method="lm")+ylab("cool precipitation")+
-  scale_color_manual(values=c(control="#69b3a2", removal="grey"))+
+  scale_color_manual(values=c(control="#9900cc", removal="#FFcc00"))+
   scale_y_continuous(n.breaks=3, labels = scales::label_number(accuracy = 0.01))
 
 ggarrange(z1,z2,z3, common.legend = T, nrow=3, legend="bottom")
@@ -369,3 +369,21 @@ rolling_mod=function(split) {
                    xreg  = analysis_set[,3:5], 
                    link  = "log")
 }
+
+#run before building rolling origin bject
+n_moons_yr=13
+n_yrs=5
+n_moons_train=n_moons_yr*n_yrs
+n_moons_test=n_moons_yr*1
+
+#run before making forecasts
+
+#PP
+m=rep(seq(1:39), each=13) #no.of splits
+code1="same"
+code2="switched"
+
+#PB
+m=rep(seq(1:42), each=13)
+code1="same"
+code2="switched"
